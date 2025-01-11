@@ -5,33 +5,70 @@
 
 #nullable disable
 
+using System;
+using System.Collections.Generic;
+
 namespace Azure.ResourceManager.Workloads.Models
 {
     /// <summary> The disk configuration required for the selected volume. </summary>
     public partial class DiskVolumeConfiguration
     {
-        /// <summary> Initializes a new instance of DiskVolumeConfiguration. </summary>
+        /// <summary>
+        /// Keeps track of any properties unknown to the library.
+        /// <para>
+        /// To assign an object to the value of this property use <see cref="BinaryData.FromObjectAsJson{T}(T, System.Text.Json.JsonSerializerOptions?)"/>.
+        /// </para>
+        /// <para>
+        /// To assign an already formatted json string to this property use <see cref="BinaryData.FromString(string)"/>.
+        /// </para>
+        /// <para>
+        /// Examples:
+        /// <list type="bullet">
+        /// <item>
+        /// <term>BinaryData.FromObjectAsJson("foo")</term>
+        /// <description>Creates a payload of "foo".</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromString("\"foo\"")</term>
+        /// <description>Creates a payload of "foo".</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromObjectAsJson(new { key = "value" })</term>
+        /// <description>Creates a payload of { "key": "value" }.</description>
+        /// </item>
+        /// <item>
+        /// <term>BinaryData.FromString("{\"key\": \"value\"}")</term>
+        /// <description>Creates a payload of { "key": "value" }.</description>
+        /// </item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        private IDictionary<string, BinaryData> _serializedAdditionalRawData;
+
+        /// <summary> Initializes a new instance of <see cref="DiskVolumeConfiguration"/>. </summary>
         public DiskVolumeConfiguration()
         {
         }
 
-        /// <summary> Initializes a new instance of DiskVolumeConfiguration. </summary>
+        /// <summary> Initializes a new instance of <see cref="DiskVolumeConfiguration"/>. </summary>
         /// <param name="count"> The total number of disks required for the concerned volume. </param>
-        /// <param name="sizeGB"> The disk size in GB. </param>
+        /// <param name="sizeInGB"> The disk size in GB. </param>
         /// <param name="sku"> The disk SKU details. </param>
-        internal DiskVolumeConfiguration(long? count, long? sizeGB, DiskSku sku)
+        /// <param name="serializedAdditionalRawData"> Keeps track of any properties unknown to the library. </param>
+        internal DiskVolumeConfiguration(long? count, long? sizeInGB, SapDiskSku sku, IDictionary<string, BinaryData> serializedAdditionalRawData)
         {
             Count = count;
-            SizeGB = sizeGB;
+            SizeInGB = sizeInGB;
             Sku = sku;
+            _serializedAdditionalRawData = serializedAdditionalRawData;
         }
 
         /// <summary> The total number of disks required for the concerned volume. </summary>
         public long? Count { get; set; }
         /// <summary> The disk size in GB. </summary>
-        public long? SizeGB { get; set; }
+        public long? SizeInGB { get; set; }
         /// <summary> The disk SKU details. </summary>
-        internal DiskSku Sku { get; set; }
+        internal SapDiskSku Sku { get; set; }
         /// <summary> Defines the disk sku name. </summary>
         public DiskDetailsDiskSkuName? SkuName
         {
@@ -39,7 +76,7 @@ namespace Azure.ResourceManager.Workloads.Models
             set
             {
                 if (Sku is null)
-                    Sku = new DiskSku();
+                    Sku = new SapDiskSku();
                 Sku.Name = value;
             }
         }

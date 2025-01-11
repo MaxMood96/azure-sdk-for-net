@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -18,15 +17,14 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<int> mainCauseCode = default;
-            Optional<int> subCauseCode = default;
+            int? mainCauseCode = default;
+            int? subCauseCode = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("mainCauseCode"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     mainCauseCode = property.Value.GetInt32();
@@ -36,14 +34,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     subCauseCode = property.Value.GetInt32();
                     continue;
                 }
             }
-            return new RouteSectionTecCause(Optional.ToNullable(mainCauseCode), Optional.ToNullable(subCauseCode));
+            return new RouteSectionTecCause(mainCauseCode, subCauseCode);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RouteSectionTecCause FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRouteSectionTecCause(document.RootElement);
         }
     }
 }

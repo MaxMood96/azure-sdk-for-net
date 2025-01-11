@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -22,17 +21,16 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<IReadOnlyList<string>> expiredGeofenceGeometryId = default;
-            Optional<IReadOnlyList<MapsGeofenceGeometry>> geometries = default;
-            Optional<IReadOnlyList<string>> invalidPeriodGeofenceGeometryId = default;
-            Optional<bool> isEventPublished = default;
+            IReadOnlyList<string> expiredGeofenceGeometryId = default;
+            IReadOnlyList<MapsGeofenceGeometry> geometries = default;
+            IReadOnlyList<string> invalidPeriodGeofenceGeometryId = default;
+            bool? isEventPublished = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("expiredGeofenceGeometryId"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<string> array = new List<string>();
@@ -47,7 +45,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<MapsGeofenceGeometry> array = new List<MapsGeofenceGeometry>();
@@ -62,7 +59,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<string> array = new List<string>();
@@ -77,14 +73,21 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isEventPublished = property.Value.GetBoolean();
                     continue;
                 }
             }
-            return new MapsGeofenceExitedEventData(Optional.ToList(expiredGeofenceGeometryId), Optional.ToList(geometries), Optional.ToList(invalidPeriodGeofenceGeometryId), Optional.ToNullable(isEventPublished));
+            return new MapsGeofenceExitedEventData(expiredGeofenceGeometryId ?? new ChangeTrackingList<string>(), geometries ?? new ChangeTrackingList<MapsGeofenceGeometry>(), invalidPeriodGeofenceGeometryId ?? new ChangeTrackingList<string>(), isEventPublished);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new MapsGeofenceExitedEventData FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeMapsGeofenceExitedEventData(document.RootElement);
         }
 
         internal partial class MapsGeofenceExitedEventDataConverter : JsonConverter<MapsGeofenceExitedEventData>
@@ -93,6 +96,7 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 throw new NotImplementedException();
             }
+
             public override MapsGeofenceExitedEventData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

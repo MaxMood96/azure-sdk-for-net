@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
+using Azure.Maps.Common;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -19,14 +19,13 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<IReadOnlyList<EffectiveSetting>> effectiveSettings = default;
+            IReadOnlyList<EffectiveSetting> effectiveSettings = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("effectiveSettings"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<EffectiveSetting> array = new List<EffectiveSetting>();
@@ -38,7 +37,15 @@ namespace Azure.Maps.Routing.Models
                     continue;
                 }
             }
-            return new RouteReport(Optional.ToList(effectiveSettings));
+            return new RouteReport(effectiveSettings ?? new ChangeTrackingList<EffectiveSetting>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RouteReport FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRouteReport(document.RootElement);
         }
     }
 }

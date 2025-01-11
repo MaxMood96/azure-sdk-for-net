@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.DocumentAnalysis
 {
@@ -19,8 +18,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 return null;
             }
             DocumentKeyValueElement key = default;
-            Optional<DocumentKeyValueElement> value = default;
-            Optional<string> commonName = default;
+            DocumentKeyValueElement value = default;
             float confidence = default;
             foreach (var property in element.EnumerateObject())
             {
@@ -33,15 +31,9 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     value = DocumentKeyValueElement.DeserializeDocumentKeyValueElement(property.Value);
-                    continue;
-                }
-                if (property.NameEquals("commonName"u8))
-                {
-                    commonName = property.Value.GetString();
                     continue;
                 }
                 if (property.NameEquals("confidence"u8))
@@ -50,7 +42,15 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     continue;
                 }
             }
-            return new DocumentKeyValuePair(key, value.Value, commonName.Value, confidence);
+            return new DocumentKeyValuePair(key, value, confidence);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DocumentKeyValuePair FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDocumentKeyValuePair(document.RootElement);
         }
     }
 }

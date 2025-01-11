@@ -5,101 +5,172 @@
 
 #nullable disable
 
+using System;
+using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
 
 namespace Azure.ResourceManager.Workloads.Models
 {
-    public partial class ThreeTierFullResourceNames : IUtf8JsonSerializable
+    public partial class ThreeTierFullResourceNames : IUtf8JsonSerializable, IJsonModel<ThreeTierFullResourceNames>
     {
-        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer) => ((IJsonModel<ThreeTierFullResourceNames>)this).Write(writer, ModelSerializationExtensions.WireOptions);
+
+        void IJsonModel<ThreeTierFullResourceNames>.Write(Utf8JsonWriter writer, ModelReaderWriterOptions options)
         {
             writer.WriteStartObject();
+            JsonModelWriteCore(writer, options);
+            writer.WriteEndObject();
+        }
+
+        /// <param name="writer"> The JSON writer. </param>
+        /// <param name="options"> The client options for reading and writing models. </param>
+        protected override void JsonModelWriteCore(Utf8JsonWriter writer, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ThreeTierFullResourceNames>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ThreeTierFullResourceNames)} does not support writing '{format}' format.");
+            }
+
+            base.JsonModelWriteCore(writer, options);
             if (Optional.IsDefined(CentralServer))
             {
                 writer.WritePropertyName("centralServer"u8);
-                writer.WriteObjectValue(CentralServer);
+                writer.WriteObjectValue(CentralServer, options);
             }
             if (Optional.IsDefined(ApplicationServer))
             {
                 writer.WritePropertyName("applicationServer"u8);
-                writer.WriteObjectValue(ApplicationServer);
+                writer.WriteObjectValue(ApplicationServer, options);
             }
             if (Optional.IsDefined(DatabaseServer))
             {
                 writer.WritePropertyName("databaseServer"u8);
-                writer.WriteObjectValue(DatabaseServer);
+                writer.WriteObjectValue(DatabaseServer, options);
             }
             if (Optional.IsDefined(SharedStorage))
             {
                 writer.WritePropertyName("sharedStorage"u8);
-                writer.WriteObjectValue(SharedStorage);
+                writer.WriteObjectValue(SharedStorage, options);
             }
-            writer.WritePropertyName("namingPatternType"u8);
-            writer.WriteStringValue(NamingPatternType.ToString());
-            writer.WriteEndObject();
         }
 
-        internal static ThreeTierFullResourceNames DeserializeThreeTierFullResourceNames(JsonElement element)
+        ThreeTierFullResourceNames IJsonModel<ThreeTierFullResourceNames>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options)
         {
+            var format = options.Format == "W" ? ((IPersistableModel<ThreeTierFullResourceNames>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ThreeTierFullResourceNames)} does not support reading '{format}' format.");
+            }
+
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return DeserializeThreeTierFullResourceNames(document.RootElement, options);
+        }
+
+        internal static ThreeTierFullResourceNames DeserializeThreeTierFullResourceNames(JsonElement element, ModelReaderWriterOptions options = null)
+        {
+            options ??= ModelSerializationExtensions.WireOptions;
+
             if (element.ValueKind == JsonValueKind.Null)
             {
                 return null;
             }
-            Optional<CentralServerFullResourceNames> centralServer = default;
-            Optional<ApplicationServerFullResourceNames> applicationServer = default;
-            Optional<DatabaseServerFullResourceNames> databaseServer = default;
-            Optional<SharedStorageResourceNames> sharedStorage = default;
-            NamingPatternType namingPatternType = default;
+            CentralServerFullResourceNames centralServer = default;
+            ApplicationServerFullResourceNames applicationServer = default;
+            DatabaseServerFullResourceNames databaseServer = default;
+            SharedStorageResourceNames sharedStorage = default;
+            SapNamingPatternType namingPatternType = default;
+            IDictionary<string, BinaryData> serializedAdditionalRawData = default;
+            Dictionary<string, BinaryData> rawDataDictionary = new Dictionary<string, BinaryData>();
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("centralServer"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    centralServer = CentralServerFullResourceNames.DeserializeCentralServerFullResourceNames(property.Value);
+                    centralServer = CentralServerFullResourceNames.DeserializeCentralServerFullResourceNames(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("applicationServer"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    applicationServer = ApplicationServerFullResourceNames.DeserializeApplicationServerFullResourceNames(property.Value);
+                    applicationServer = ApplicationServerFullResourceNames.DeserializeApplicationServerFullResourceNames(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("databaseServer"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    databaseServer = DatabaseServerFullResourceNames.DeserializeDatabaseServerFullResourceNames(property.Value);
+                    databaseServer = DatabaseServerFullResourceNames.DeserializeDatabaseServerFullResourceNames(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("sharedStorage"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    sharedStorage = SharedStorageResourceNames.DeserializeSharedStorageResourceNames(property.Value);
+                    sharedStorage = SharedStorageResourceNames.DeserializeSharedStorageResourceNames(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("namingPatternType"u8))
                 {
-                    namingPatternType = new NamingPatternType(property.Value.GetString());
+                    namingPatternType = new SapNamingPatternType(property.Value.GetString());
                     continue;
                 }
+                if (options.Format != "W")
+                {
+                    rawDataDictionary.Add(property.Name, BinaryData.FromString(property.Value.GetRawText()));
+                }
             }
-            return new ThreeTierFullResourceNames(namingPatternType, centralServer.Value, applicationServer.Value, databaseServer.Value, sharedStorage.Value);
+            serializedAdditionalRawData = rawDataDictionary;
+            return new ThreeTierFullResourceNames(
+                namingPatternType,
+                serializedAdditionalRawData,
+                centralServer,
+                applicationServer,
+                databaseServer,
+                sharedStorage);
         }
+
+        BinaryData IPersistableModel<ThreeTierFullResourceNames>.Write(ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ThreeTierFullResourceNames>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    return ModelReaderWriter.Write(this, options);
+                default:
+                    throw new FormatException($"The model {nameof(ThreeTierFullResourceNames)} does not support writing '{options.Format}' format.");
+            }
+        }
+
+        ThreeTierFullResourceNames IPersistableModel<ThreeTierFullResourceNames>.Create(BinaryData data, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ThreeTierFullResourceNames>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    {
+                        using JsonDocument document = JsonDocument.Parse(data);
+                        return DeserializeThreeTierFullResourceNames(document.RootElement, options);
+                    }
+                default:
+                    throw new FormatException($"The model {nameof(ThreeTierFullResourceNames)} does not support reading '{options.Format}' format.");
+            }
+        }
+
+        string IPersistableModel<ThreeTierFullResourceNames>.GetFormatFromOptions(ModelReaderWriterOptions options) => "J";
     }
 }

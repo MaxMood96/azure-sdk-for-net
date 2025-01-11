@@ -57,10 +57,10 @@ namespace Azure.Search.Documents.Indexes.Models
                 return null;
             }
             IList<string> wordList = default;
-            Optional<int> minWordSize = default;
-            Optional<int> minSubwordSize = default;
-            Optional<int> maxSubwordSize = default;
-            Optional<bool> onlyLongestMatch = default;
+            int? minWordSize = default;
+            int? minSubwordSize = default;
+            int? maxSubwordSize = default;
+            bool? onlyLongestMatch = default;
             string odataType = default;
             string name = default;
             foreach (var property in element.EnumerateObject())
@@ -79,7 +79,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     minWordSize = property.Value.GetInt32();
@@ -89,7 +88,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     minSubwordSize = property.Value.GetInt32();
@@ -99,7 +97,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     maxSubwordSize = property.Value.GetInt32();
@@ -109,7 +106,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     onlyLongestMatch = property.Value.GetBoolean();
@@ -126,7 +122,30 @@ namespace Azure.Search.Documents.Indexes.Models
                     continue;
                 }
             }
-            return new DictionaryDecompounderTokenFilter(odataType, name, wordList, Optional.ToNullable(minWordSize), Optional.ToNullable(minSubwordSize), Optional.ToNullable(maxSubwordSize), Optional.ToNullable(onlyLongestMatch));
+            return new DictionaryDecompounderTokenFilter(
+                odataType,
+                name,
+                wordList,
+                minWordSize,
+                minSubwordSize,
+                maxSubwordSize,
+                onlyLongestMatch);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new DictionaryDecompounderTokenFilter FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDictionaryDecompounderTokenFilter(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

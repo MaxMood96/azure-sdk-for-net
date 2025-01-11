@@ -96,25 +96,24 @@ namespace Azure.Communication.ShortCodes.Models
             {
                 return null;
             }
-            Optional<bool> isVanity = default;
-            Optional<IList<string>> preferredVanityNumbers = default;
-            Optional<NumberType> numberType = default;
-            Optional<bool> isPoliticalCampaign = default;
-            Optional<string> name = default;
-            Optional<string> description = default;
-            Optional<Uri> url = default;
-            Optional<IList<ProgramSignUpType>> signUpTypes = default;
-            Optional<Uri> signUpUrl = default;
-            Optional<Uri> termsOfServiceUrl = default;
-            Optional<Uri> privacyPolicyUrl = default;
-            Optional<DateTimeOffset> expectedDateOfService = default;
+            bool? isVanity = default;
+            IList<string> preferredVanityNumbers = default;
+            NumberType? numberType = default;
+            bool? isPoliticalCampaign = default;
+            string name = default;
+            string description = default;
+            Uri url = default;
+            IList<ProgramSignUpType> signUpTypes = default;
+            Uri signUpUrl = default;
+            Uri termsOfServiceUrl = default;
+            Uri privacyPolicyUrl = default;
+            DateTimeOffset? expectedDateOfService = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("isVanity"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isVanity = property.Value.GetBoolean();
@@ -124,7 +123,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<string> array = new List<string>();
@@ -139,7 +137,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     numberType = new NumberType(property.Value.GetString());
@@ -149,7 +146,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isPoliticalCampaign = property.Value.GetBoolean();
@@ -169,7 +165,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     url = new Uri(property.Value.GetString());
@@ -179,7 +174,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ProgramSignUpType> array = new List<ProgramSignUpType>();
@@ -194,7 +188,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     signUpUrl = new Uri(property.Value.GetString());
@@ -204,7 +197,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     termsOfServiceUrl = new Uri(property.Value.GetString());
@@ -214,7 +206,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     privacyPolicyUrl = new Uri(property.Value.GetString());
@@ -224,14 +215,41 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     expectedDateOfService = property.Value.GetDateTimeOffset("O");
                     continue;
                 }
             }
-            return new ProgramDetails(Optional.ToNullable(isVanity), Optional.ToList(preferredVanityNumbers), Optional.ToNullable(numberType), Optional.ToNullable(isPoliticalCampaign), name.Value, description.Value, url.Value, Optional.ToList(signUpTypes), signUpUrl.Value, termsOfServiceUrl.Value, privacyPolicyUrl.Value, Optional.ToNullable(expectedDateOfService));
+            return new ProgramDetails(
+                isVanity,
+                preferredVanityNumbers ?? new ChangeTrackingList<string>(),
+                numberType,
+                isPoliticalCampaign,
+                name,
+                description,
+                url,
+                signUpTypes ?? new ChangeTrackingList<ProgramSignUpType>(),
+                signUpUrl,
+                termsOfServiceUrl,
+                privacyPolicyUrl,
+                expectedDateOfService);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ProgramDetails FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeProgramDetails(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Communication.Chat
 {
@@ -21,9 +20,9 @@ namespace Azure.Communication.Chat
             }
             string code = default;
             string message = default;
-            Optional<string> target = default;
-            Optional<IReadOnlyList<ChatError>> details = default;
-            Optional<ChatError> innererror = default;
+            string target = default;
+            IReadOnlyList<ChatError> details = default;
+            ChatError innererror = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("code"u8))
@@ -45,7 +44,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ChatError> array = new List<ChatError>();
@@ -60,14 +58,21 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     innererror = DeserializeChatError(property.Value);
                     continue;
                 }
             }
-            return new ChatError(code, message, target.Value, Optional.ToList(details), innererror.Value);
+            return new ChatError(code, message, target, details ?? new ChangeTrackingList<ChatError>(), innererror);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ChatError FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeChatError(document.RootElement);
         }
     }
 }

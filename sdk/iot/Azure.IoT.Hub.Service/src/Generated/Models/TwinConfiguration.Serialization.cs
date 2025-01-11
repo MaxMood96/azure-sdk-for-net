@@ -87,17 +87,17 @@ namespace Azure.IoT.Hub.Service.Models
             {
                 return null;
             }
-            Optional<string> id = default;
-            Optional<string> schemaVersion = default;
-            Optional<IDictionary<string, string>> labels = default;
-            Optional<ConfigurationContent> content = default;
-            Optional<string> targetCondition = default;
-            Optional<DateTimeOffset> createdTimeUtc = default;
-            Optional<DateTimeOffset> lastUpdatedTimeUtc = default;
-            Optional<int> priority = default;
-            Optional<ConfigurationMetrics> systemMetrics = default;
-            Optional<ConfigurationMetrics> metrics = default;
-            Optional<string> etag = default;
+            string id = default;
+            string schemaVersion = default;
+            IDictionary<string, string> labels = default;
+            ConfigurationContent content = default;
+            string targetCondition = default;
+            DateTimeOffset? createdTimeUtc = default;
+            DateTimeOffset? lastUpdatedTimeUtc = default;
+            int? priority = default;
+            ConfigurationMetrics systemMetrics = default;
+            ConfigurationMetrics metrics = default;
+            string etag = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("id"u8))
@@ -114,7 +114,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -129,7 +128,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     content = ConfigurationContent.DeserializeConfigurationContent(property.Value);
@@ -144,7 +142,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     createdTimeUtc = property.Value.GetDateTimeOffset("O");
@@ -154,7 +151,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lastUpdatedTimeUtc = property.Value.GetDateTimeOffset("O");
@@ -164,7 +160,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     priority = property.Value.GetInt32();
@@ -174,7 +169,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     systemMetrics = ConfigurationMetrics.DeserializeConfigurationMetrics(property.Value);
@@ -184,7 +178,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     metrics = ConfigurationMetrics.DeserializeConfigurationMetrics(property.Value);
@@ -196,7 +189,34 @@ namespace Azure.IoT.Hub.Service.Models
                     continue;
                 }
             }
-            return new TwinConfiguration(id.Value, schemaVersion.Value, Optional.ToDictionary(labels), content.Value, targetCondition.Value, Optional.ToNullable(createdTimeUtc), Optional.ToNullable(lastUpdatedTimeUtc), Optional.ToNullable(priority), systemMetrics.Value, metrics.Value, etag.Value);
+            return new TwinConfiguration(
+                id,
+                schemaVersion,
+                labels ?? new ChangeTrackingDictionary<string, string>(),
+                content,
+                targetCondition,
+                createdTimeUtc,
+                lastUpdatedTimeUtc,
+                priority,
+                systemMetrics,
+                metrics,
+                etag);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static TwinConfiguration FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeTwinConfiguration(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

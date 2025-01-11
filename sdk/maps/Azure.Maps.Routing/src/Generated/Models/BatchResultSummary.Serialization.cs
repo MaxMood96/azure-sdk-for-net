@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -18,15 +17,14 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<int> successfulRequests = default;
-            Optional<int> totalRequests = default;
+            int? successfulRequests = default;
+            int? totalRequests = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("successfulRequests"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     successfulRequests = property.Value.GetInt32();
@@ -36,14 +34,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     totalRequests = property.Value.GetInt32();
                     continue;
                 }
             }
-            return new BatchResultSummary(Optional.ToNullable(successfulRequests), Optional.ToNullable(totalRequests));
+            return new BatchResultSummary(successfulRequests, totalRequests);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static BatchResultSummary FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeBatchResultSummary(document.RootElement);
         }
     }
 }

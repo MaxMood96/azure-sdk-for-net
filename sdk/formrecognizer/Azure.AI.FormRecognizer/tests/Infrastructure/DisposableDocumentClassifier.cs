@@ -20,18 +20,28 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         /// <summary>
         /// Initializes a new instance of the <see cref="DisposableDocumentClassifier"/> class.
         /// </summary>
-        /// <param name="adminClient">The client to use for deleting the classifier upon disposal.</param>
-        /// <param name="classifierId">The identifier of the classifier to delete upon disposal.</param>
-        private DisposableDocumentClassifier(DocumentModelAdministrationClient client, DocumentClassifierDetails value)
+        /// <param name="client">The client to use for deleting the classifier upon disposal.</param>
+        /// <param name="operation">The operation that built the classifier this instance is associated with.</param>
+        private DisposableDocumentClassifier(DocumentModelAdministrationClient client, BuildDocumentClassifierOperation operation)
         {
             _client = client;
-            Value = value;
+            Operation = operation;
         }
+
+        /// <summary>
+        /// The operation that built the classifier this instance is associated with.
+        /// </summary>
+        public BuildDocumentClassifierOperation Operation { get; }
 
         /// <summary>
         /// The classifier this instance is associated with. It will be deleted upon disposal.
         /// </summary>
-        public DocumentClassifierDetails Value { get; }
+        public DocumentClassifierDetails Value => Operation.Value;
+
+        /// <summary>
+        /// The identifier of the classifier this instance is associated with.
+        /// </summary>
+        public string ClassifierId => Value.ClassifierId;
 
         /// <summary>
         /// Builds a classifier using the specified <see cref="DocumentModelAdministrationClient"/> and the specified set of training files. A
@@ -46,12 +56,12 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         {
             BuildDocumentClassifierOperation operation = await client.BuildDocumentClassifierAsync(WaitUntil.Completed, documentTypes, classifierId, description);
 
-            return new DisposableDocumentClassifier(client, operation.Value);
+            return new DisposableDocumentClassifier(client, operation);
         }
 
         /// <summary>
         /// Deletes the classifier this instance is associated with.
         /// </summary>
-        public async ValueTask DisposeAsync() => await _client.DeleteDocumentClassifierAsync(Value.ClassifierId);
+        public async ValueTask DisposeAsync() => await _client.DeleteDocumentClassifierAsync(ClassifierId);
     }
 }

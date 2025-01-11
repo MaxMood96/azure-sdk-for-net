@@ -7,7 +7,6 @@
 
 using System;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -19,16 +18,15 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<DateTimeOffset> timestamp = default;
-            Optional<int> segmentsSucceeded = default;
-            Optional<int> segmentsFailed = default;
+            DateTimeOffset? timestamp = default;
+            int? segmentsSucceeded = default;
+            int? segmentsFailed = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("timestamp"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     timestamp = property.Value.GetDateTimeOffset("O");
@@ -38,7 +36,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     segmentsSucceeded = property.Value.GetInt32();
@@ -48,14 +45,21 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     segmentsFailed = property.Value.GetInt32();
                     continue;
                 }
             }
-            return new AcsSmsDeliveryAttemptProperties(Optional.ToNullable(timestamp), Optional.ToNullable(segmentsSucceeded), Optional.ToNullable(segmentsFailed));
+            return new AcsSmsDeliveryAttemptProperties(timestamp, segmentsSucceeded, segmentsFailed);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static AcsSmsDeliveryAttemptProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeAcsSmsDeliveryAttemptProperties(document.RootElement);
         }
     }
 }

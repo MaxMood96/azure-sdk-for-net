@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Analytics.Synapse.Artifacts.Models
 {
@@ -22,19 +21,19 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 return null;
             }
-            Optional<string> pipelineName = default;
-            Optional<string> pipelineRunId = default;
-            Optional<string> activityName = default;
-            Optional<string> activityType = default;
-            Optional<string> activityRunId = default;
-            Optional<string> linkedServiceName = default;
-            Optional<string> status = default;
-            Optional<DateTimeOffset> activityRunStart = default;
-            Optional<DateTimeOffset> activityRunEnd = default;
-            Optional<int> durationInMs = default;
-            Optional<object> input = default;
-            Optional<object> output = default;
-            Optional<object> error = default;
+            string pipelineName = default;
+            string pipelineRunId = default;
+            string activityName = default;
+            string activityType = default;
+            string activityRunId = default;
+            string linkedServiceName = default;
+            string status = default;
+            DateTimeOffset? activityRunStart = default;
+            DateTimeOffset? activityRunEnd = default;
+            int? durationInMs = default;
+            object input = default;
+            object output = default;
+            object error = default;
             IReadOnlyDictionary<string, object> additionalProperties = default;
             Dictionary<string, object> additionalPropertiesDictionary = new Dictionary<string, object>();
             foreach (var property in element.EnumerateObject())
@@ -78,7 +77,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     activityRunStart = property.Value.GetDateTimeOffset("O");
@@ -88,7 +86,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     activityRunEnd = property.Value.GetDateTimeOffset("O");
@@ -98,7 +95,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     durationInMs = property.Value.GetInt32();
@@ -108,7 +104,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     input = property.Value.GetObject();
@@ -118,7 +113,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     output = property.Value.GetObject();
@@ -128,7 +122,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     error = property.Value.GetObject();
@@ -137,7 +130,29 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 additionalPropertiesDictionary.Add(property.Name, property.Value.GetObject());
             }
             additionalProperties = additionalPropertiesDictionary;
-            return new ActivityRun(pipelineName.Value, pipelineRunId.Value, activityName.Value, activityType.Value, activityRunId.Value, linkedServiceName.Value, status.Value, Optional.ToNullable(activityRunStart), Optional.ToNullable(activityRunEnd), Optional.ToNullable(durationInMs), input.Value, output.Value, error.Value, additionalProperties);
+            return new ActivityRun(
+                pipelineName,
+                pipelineRunId,
+                activityName,
+                activityType,
+                activityRunId,
+                linkedServiceName,
+                status,
+                activityRunStart,
+                activityRunEnd,
+                durationInMs,
+                input,
+                output,
+                error,
+                additionalProperties);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ActivityRun FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeActivityRun(document.RootElement);
         }
 
         internal partial class ActivityRunConverter : JsonConverter<ActivityRun>
@@ -146,6 +161,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 throw new NotImplementedException();
             }
+
             public override ActivityRun Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

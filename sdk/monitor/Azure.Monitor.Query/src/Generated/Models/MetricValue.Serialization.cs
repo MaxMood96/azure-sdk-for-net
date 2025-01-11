@@ -7,7 +7,6 @@
 
 using System;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Monitor.Query.Models
 {
@@ -20,11 +19,11 @@ namespace Azure.Monitor.Query.Models
                 return null;
             }
             DateTimeOffset timeStamp = default;
-            Optional<double> average = default;
-            Optional<double> minimum = default;
-            Optional<double> maximum = default;
-            Optional<double> total = default;
-            Optional<double> count = default;
+            double? average = default;
+            double? minimum = default;
+            double? maximum = default;
+            double? total = default;
+            double? count = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("timeStamp"u8))
@@ -36,7 +35,6 @@ namespace Azure.Monitor.Query.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     average = property.Value.GetDouble();
@@ -46,7 +44,6 @@ namespace Azure.Monitor.Query.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     minimum = property.Value.GetDouble();
@@ -56,7 +53,6 @@ namespace Azure.Monitor.Query.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     maximum = property.Value.GetDouble();
@@ -66,7 +62,6 @@ namespace Azure.Monitor.Query.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     total = property.Value.GetDouble();
@@ -76,14 +71,27 @@ namespace Azure.Monitor.Query.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     count = property.Value.GetDouble();
                     continue;
                 }
             }
-            return new MetricValue(timeStamp, Optional.ToNullable(average), Optional.ToNullable(minimum), Optional.ToNullable(maximum), Optional.ToNullable(total), Optional.ToNullable(count));
+            return new MetricValue(
+                timeStamp,
+                average,
+                minimum,
+                maximum,
+                total,
+                count);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static MetricValue FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeMetricValue(document.RootElement);
         }
     }
 }

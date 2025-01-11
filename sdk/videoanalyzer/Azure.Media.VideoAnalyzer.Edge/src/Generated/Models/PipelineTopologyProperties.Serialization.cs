@@ -70,11 +70,11 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
             {
                 return null;
             }
-            Optional<string> description = default;
-            Optional<IList<ParameterDeclaration>> parameters = default;
-            Optional<IList<SourceNodeBase>> sources = default;
-            Optional<IList<ProcessorNodeBase>> processors = default;
-            Optional<IList<SinkNodeBase>> sinks = default;
+            string description = default;
+            IList<ParameterDeclaration> parameters = default;
+            IList<SourceNodeBase> sources = default;
+            IList<ProcessorNodeBase> processors = default;
+            IList<SinkNodeBase> sinks = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("description"u8))
@@ -86,7 +86,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ParameterDeclaration> array = new List<ParameterDeclaration>();
@@ -101,7 +100,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<SourceNodeBase> array = new List<SourceNodeBase>();
@@ -116,7 +114,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ProcessorNodeBase> array = new List<ProcessorNodeBase>();
@@ -131,7 +128,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<SinkNodeBase> array = new List<SinkNodeBase>();
@@ -143,7 +139,23 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                     continue;
                 }
             }
-            return new PipelineTopologyProperties(description.Value, Optional.ToList(parameters), Optional.ToList(sources), Optional.ToList(processors), Optional.ToList(sinks));
+            return new PipelineTopologyProperties(description, parameters ?? new ChangeTrackingList<ParameterDeclaration>(), sources ?? new ChangeTrackingList<SourceNodeBase>(), processors ?? new ChangeTrackingList<ProcessorNodeBase>(), sinks ?? new ChangeTrackingList<SinkNodeBase>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static PipelineTopologyProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializePipelineTopologyProperties(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

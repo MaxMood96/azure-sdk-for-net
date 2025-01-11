@@ -7,20 +7,17 @@
 
 using System;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
-using Azure.ResourceManager.SecurityCenter;
 using Azure.ResourceManager.SecurityCenter.Models;
+using NUnit.Framework;
 
 namespace Azure.ResourceManager.SecurityCenter.Samples
 {
     public partial class Sample_SecuritySettingResource
     {
-        // Get a setting on subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task Get_GetASettingOnSubscription()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSetting_example.json
@@ -34,7 +31,7 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             // this example assumes you already have this SecuritySettingResource created on azure
             // for more information of creating SecuritySettingResource, please refer to the document of SecuritySettingResource
             string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
-            SecuritySettingName settingName = SecuritySettingName.Mcas;
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
             ResourceIdentifier securitySettingResourceId = SecuritySettingResource.CreateResourceIdentifier(subscriptionId, settingName);
             SecuritySettingResource securitySetting = client.GetSecuritySettingResource(securitySettingResourceId);
 
@@ -48,9 +45,8 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             Console.WriteLine($"Succeeded on id: {resourceData.Id}");
         }
 
-        // Update a setting for subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task Update_UpdateASettingForSubscription()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/UpdateSetting_example.json
@@ -64,12 +60,12 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             // this example assumes you already have this SecuritySettingResource created on azure
             // for more information of creating SecuritySettingResource, please refer to the document of SecuritySettingResource
             string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
-            SecuritySettingName settingName = SecuritySettingName.Mcas;
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
             ResourceIdentifier securitySettingResourceId = SecuritySettingResource.CreateResourceIdentifier(subscriptionId, settingName);
             SecuritySettingResource securitySetting = client.GetSecuritySettingResource(securitySettingResourceId);
 
             // invoke the operation
-            SecuritySettingData data = new DataExportSettings()
+            SecuritySettingData data = new DataExportSettings
             {
                 IsEnabled = true,
             };

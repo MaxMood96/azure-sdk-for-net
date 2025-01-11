@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Azure;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Data.Tables.Models;
@@ -31,9 +30,9 @@ namespace Azure.Data.Tables
         /// <param name="clientDiagnostics"> The handler for diagnostic messaging in the client. </param>
         /// <param name="pipeline"> The HTTP pipeline for sending and receiving REST requests and responses. </param>
         /// <param name="url"> The URL of the service account or table that is the target of the desired operation. </param>
-        /// <param name="version"> Specifies the version of the operation to use for this request. </param>
+        /// <param name="version"> Specifies the version of the operation to use for this request. The default value is "2019-02-02". </param>
         /// <exception cref="ArgumentNullException"> <paramref name="clientDiagnostics"/>, <paramref name="pipeline"/>, <paramref name="url"/> or <paramref name="version"/> is null. </exception>
-        public TableRestClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, string url, string version = "2019-02-02")
+        public TableRestClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, string url, string version)
         {
             ClientDiagnostics = clientDiagnostics ?? throw new ArgumentNullException(nameof(clientDiagnostics));
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
@@ -95,7 +94,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -118,7 +117,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -177,7 +176,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue((TableResponse)null, headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -209,7 +208,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue((TableResponse)null, headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -228,20 +227,29 @@ namespace Azure.Data.Tables
             request.Uri = uri;
             request.Headers.Add("x-ms-version", _version);
             request.Headers.Add("DataServiceVersion", "3.0");
+            request.Headers.Add("Accept", "application/json;odata=minimalmetadata");
             if (responsePreference != null)
             {
                 request.Headers.Add("Prefer", responsePreference);
             }
-            request.Headers.Add("Accept", "application/json;odata=minimalmetadata");
             request.Headers.Add("Content-Type", "application/json;odata=nometadata");
             request.Content = content;
             return message;
         }
 
-        /// <summary> Creates a new table under the given account. </summary>
-        /// <param name="content"> The content to send as the body of the request. Details of the request body schema are in the Remarks section below. </param>
-        /// <param name="format"> Specifies the media type for the response. Allowed values: &quot;application/json;odata=nometadata&quot; | &quot;application/json;odata=minimalmetadata&quot; | &quot;application/json;odata=fullmetadata&quot;. </param>
-        /// <param name="responsePreference"> Specifies whether the response should include the inserted entity in the payload. Possible values are return-no-content and return-content. Allowed values: &quot;return-no-content&quot; | &quot;return-content&quot;. </param>
+        /// <summary>
+        /// [Protocol Method] Creates a new table under the given account.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>
+        /// This <see href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/samples/ProtocolMethods.md">protocol method</see> allows explicit creation of the request and processing of the response for advanced scenarios.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        /// <param name="content"> The content to send as the body of the request. </param>
+        /// <param name="format"> Specifies the media type for the response. Allowed values: "application/json;odata=nometadata" | "application/json;odata=minimalmetadata" | "application/json;odata=fullmetadata". </param>
+        /// <param name="responsePreference"> Specifies whether the response should include the inserted entity in the payload. Possible values are return-no-content and return-content. Allowed values: "return-no-content" | "return-content". </param>
         /// <param name="context"> The request context, which can override default behaviors of the client pipeline on a per-call basis. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="content"/> is null. </exception>
         /// <exception cref="RequestFailedException"> Service returned a non-success status code. </exception>
@@ -264,10 +272,19 @@ namespace Azure.Data.Tables
             }
         }
 
-        /// <summary> Creates a new table under the given account. </summary>
-        /// <param name="content"> The content to send as the body of the request. Details of the request body schema are in the Remarks section below. </param>
-        /// <param name="format"> Specifies the media type for the response. Allowed values: &quot;application/json;odata=nometadata&quot; | &quot;application/json;odata=minimalmetadata&quot; | &quot;application/json;odata=fullmetadata&quot;. </param>
-        /// <param name="responsePreference"> Specifies whether the response should include the inserted entity in the payload. Possible values are return-no-content and return-content. Allowed values: &quot;return-no-content&quot; | &quot;return-content&quot;. </param>
+        /// <summary>
+        /// [Protocol Method] Creates a new table under the given account.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>
+        /// This <see href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/samples/ProtocolMethods.md">protocol method</see> allows explicit creation of the request and processing of the response for advanced scenarios.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        /// <param name="content"> The content to send as the body of the request. </param>
+        /// <param name="format"> Specifies the media type for the response. Allowed values: "application/json;odata=nometadata" | "application/json;odata=minimalmetadata" | "application/json;odata=fullmetadata". </param>
+        /// <param name="responsePreference"> Specifies whether the response should include the inserted entity in the payload. Possible values are return-no-content and return-content. Allowed values: "return-no-content" | "return-content". </param>
         /// <param name="context"> The request context, which can override default behaviors of the client pipeline on a per-call basis. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="content"/> is null. </exception>
         /// <exception cref="RequestFailedException"> Service returned a non-success status code. </exception>
@@ -325,7 +342,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -348,7 +365,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -368,7 +385,16 @@ namespace Azure.Data.Tables
             return message;
         }
 
-        /// <summary> Operation permanently deletes the specified table. </summary>
+        /// <summary>
+        /// [Protocol Method] Operation permanently deletes the specified table.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>
+        /// This <see href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/samples/ProtocolMethods.md">protocol method</see> allows explicit creation of the request and processing of the response for advanced scenarios.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </summary>
         /// <param name="table"> The name of the table. </param>
         /// <param name="context"> The request context, which can override default behaviors of the client pipeline on a per-call basis. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="table"/> is null. </exception>
@@ -393,7 +419,16 @@ namespace Azure.Data.Tables
             }
         }
 
-        /// <summary> Operation permanently deletes the specified table. </summary>
+        /// <summary>
+        /// [Protocol Method] Operation permanently deletes the specified table.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>
+        /// This <see href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/samples/ProtocolMethods.md">protocol method</see> allows explicit creation of the request and processing of the response for advanced scenarios.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </summary>
         /// <param name="table"> The name of the table. </param>
         /// <param name="context"> The request context, which can override default behaviors of the client pipeline on a per-call basis. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="table"/> is null. </exception>
@@ -491,7 +526,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -523,7 +558,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -612,7 +647,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -664,7 +699,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -748,7 +783,7 @@ namespace Azure.Data.Tables
                         content.JsonWriter.WriteNullValue();
                         continue;
                     }
-                    content.JsonWriter.WriteObjectValue(item.Value);
+                    content.JsonWriter.WriteObjectValue<object>(item.Value);
                 }
                 content.JsonWriter.WriteEndObject();
                 request.Content = content;
@@ -789,7 +824,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -826,7 +861,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -873,7 +908,7 @@ namespace Azure.Data.Tables
                         content.JsonWriter.WriteNullValue();
                         continue;
                     }
-                    content.JsonWriter.WriteObjectValue(item.Value);
+                    content.JsonWriter.WriteObjectValue<object>(item.Value);
                 }
                 content.JsonWriter.WriteEndObject();
                 request.Content = content;
@@ -914,7 +949,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -951,7 +986,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1021,7 +1056,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1061,7 +1096,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1103,7 +1138,7 @@ namespace Azure.Data.Tables
                         content.JsonWriter.WriteNullValue();
                         continue;
                     }
-                    content.JsonWriter.WriteObjectValue(item.Value);
+                    content.JsonWriter.WriteObjectValue<object>(item.Value);
                 }
                 content.JsonWriter.WriteEndObject();
                 request.Content = content;
@@ -1153,7 +1188,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue((IReadOnlyDictionary<string, object>)null, headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1199,7 +1234,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue((IReadOnlyDictionary<string, object>)null, headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1256,7 +1291,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1293,7 +1328,7 @@ namespace Azure.Data.Tables
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1350,7 +1385,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -1375,7 +1410,7 @@ namespace Azure.Data.Tables
                 case 204:
                     return ResponseWithHeaders.FromValue(headers, message.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 

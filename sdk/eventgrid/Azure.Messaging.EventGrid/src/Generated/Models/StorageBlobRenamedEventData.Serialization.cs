@@ -8,7 +8,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -21,14 +20,14 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<string> api = default;
-            Optional<string> clientRequestId = default;
-            Optional<string> requestId = default;
-            Optional<string> sourceUrl = default;
-            Optional<string> destinationUrl = default;
-            Optional<string> sequencer = default;
-            Optional<string> identity = default;
-            Optional<object> storageDiagnostics = default;
+            string api = default;
+            string clientRequestId = default;
+            string requestId = default;
+            string sourceUrl = default;
+            string destinationUrl = default;
+            string sequencer = default;
+            string identity = default;
+            object storageDiagnostics = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("api"u8))
@@ -70,14 +69,29 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     storageDiagnostics = property.Value.GetObject();
                     continue;
                 }
             }
-            return new StorageBlobRenamedEventData(api.Value, clientRequestId.Value, requestId.Value, sourceUrl.Value, destinationUrl.Value, sequencer.Value, identity.Value, storageDiagnostics.Value);
+            return new StorageBlobRenamedEventData(
+                api,
+                clientRequestId,
+                requestId,
+                sourceUrl,
+                destinationUrl,
+                sequencer,
+                identity,
+                storageDiagnostics);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static StorageBlobRenamedEventData FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeStorageBlobRenamedEventData(document.RootElement);
         }
 
         internal partial class StorageBlobRenamedEventDataConverter : JsonConverter<StorageBlobRenamedEventData>
@@ -86,6 +100,7 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 throw new NotImplementedException();
             }
+
             public override StorageBlobRenamedEventData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

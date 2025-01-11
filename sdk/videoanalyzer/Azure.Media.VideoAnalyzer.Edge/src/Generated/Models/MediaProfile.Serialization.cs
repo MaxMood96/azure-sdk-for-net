@@ -23,7 +23,7 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
             if (Optional.IsDefined(MediaUri))
             {
                 writer.WritePropertyName("mediaUri"u8);
-                writer.WriteObjectValue(MediaUri);
+                writer.WriteObjectValue<object>(MediaUri);
             }
             if (Optional.IsDefined(VideoEncoderConfiguration))
             {
@@ -39,9 +39,9 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
             {
                 return null;
             }
-            Optional<string> name = default;
-            Optional<object> mediaUri = default;
-            Optional<VideoEncoderConfiguration> videoEncoderConfiguration = default;
+            string name = default;
+            object mediaUri = default;
+            VideoEncoderConfiguration videoEncoderConfiguration = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("name"u8))
@@ -53,7 +53,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     mediaUri = property.Value.GetObject();
@@ -63,14 +62,29 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     videoEncoderConfiguration = VideoEncoderConfiguration.DeserializeVideoEncoderConfiguration(property.Value);
                     continue;
                 }
             }
-            return new MediaProfile(name.Value, mediaUri.Value, videoEncoderConfiguration.Value);
+            return new MediaProfile(name, mediaUri, videoEncoderConfiguration);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static MediaProfile FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeMediaProfile(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

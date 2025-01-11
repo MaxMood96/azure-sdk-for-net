@@ -8,20 +8,153 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
-using Azure.ResourceManager.Sql;
 using Azure.ResourceManager.Sql.Models;
+using NUnit.Framework;
 
 namespace Azure.ResourceManager.Sql.Samples
 {
     public partial class Sample_ManagedDatabaseResource
     {
-        // Filter managed database columns
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Get_GetsAManagedDatabase()
+        {
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseGet.json
+            // this example is just showing the usage of "ManagedDatabases_Get" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this ManagedDatabaseResource created on azure
+            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
+            string subscriptionId = "00000000-1111-2222-3333-444444444444";
+            string resourceGroupName = "Test1";
+            string managedInstanceName = "managedInstance";
+            string databaseName = "managedDatabase";
+            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
+            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
+
+            // invoke the operation
+            ManagedDatabaseResource result = await managedDatabase.GetAsync();
+
+            // the variable result is a resource, you could call other operations on this instance as well
+            // but just for demo, we get its data from this resource instance
+            ManagedDatabaseData resourceData = result.Data;
+            // for demo we just print out the id
+            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Delete_DeleteManagedDatabase()
+        {
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseDelete.json
+            // this example is just showing the usage of "ManagedDatabases_Delete" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this ManagedDatabaseResource created on azure
+            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
+            string subscriptionId = "00000000-1111-2222-3333-444444444444";
+            string resourceGroupName = "Default-SQL-SouthEastAsia";
+            string managedInstanceName = "managedInstance";
+            string databaseName = "testdb";
+            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
+            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
+
+            // invoke the operation
+            await managedDatabase.DeleteAsync(WaitUntil.Completed);
+
+            Console.WriteLine("Succeeded");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Update_UpdatesAManagedDatabaseWithMaximalProperties()
+        {
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseUpdateMax.json
+            // this example is just showing the usage of "ManagedDatabases_Update" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this ManagedDatabaseResource created on azure
+            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
+            string subscriptionId = "00000000-1111-2222-3333-444444444444";
+            string resourceGroupName = "Default-SQL-SouthEastAsia";
+            string managedInstanceName = "managedInstance";
+            string databaseName = "testdb";
+            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
+            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
+
+            // invoke the operation
+            ManagedDatabasePatch patch = new ManagedDatabasePatch
+            {
+                Tags =
+{
+["tagKey1"] = "TagValue1"
+},
+            };
+            ArmOperation<ManagedDatabaseResource> lro = await managedDatabase.UpdateAsync(WaitUntil.Completed, patch);
+            ManagedDatabaseResource result = lro.Value;
+
+            // the variable result is a resource, you could call other operations on this instance as well
+            // but just for demo, we get its data from this resource instance
+            ManagedDatabaseData resourceData = result.Data;
+            // for demo we just print out the id
+            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Update_UpdatesAManagedDatabaseWithMinimalProperties()
+        {
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseUpdateMin.json
+            // this example is just showing the usage of "ManagedDatabases_Update" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this ManagedDatabaseResource created on azure
+            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
+            string subscriptionId = "00000000-1111-2222-3333-444444444444";
+            string resourceGroupName = "Default-SQL-SouthEastAsia";
+            string managedInstanceName = "managedInstance";
+            string databaseName = "testdb";
+            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
+            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
+
+            // invoke the operation
+            ManagedDatabasePatch patch = new ManagedDatabasePatch
+            {
+                Tags =
+{
+["tagKey1"] = "TagValue1"
+},
+            };
+            ArmOperation<ManagedDatabaseResource> lro = await managedDatabase.UpdateAsync(WaitUntil.Completed, patch);
+            ManagedDatabaseResource result = lro.Value;
+
+            // the variable result is a resource, you could call other operations on this instance as well
+            // but just for demo, we get its data from this resource instance
+            ManagedDatabaseData resourceData = result.Data;
+            // for demo we just print out the id
+            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetManagedDatabaseColumnsByDatabase_FilterManagedDatabaseColumns()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedColumnsListByDatabaseMax.json
@@ -42,22 +175,10 @@ namespace Azure.ResourceManager.Sql.Samples
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation and iterate over the result
-            IEnumerable<string> schema = new string[]
-            {
-"dbo"
-            };
-            IEnumerable<string> table = new string[]
-            {
-"customer","address"
-            };
-            IEnumerable<string> column = new string[]
-            {
-"username"
-            };
-            IEnumerable<string> orderBy = new string[]
-            {
-"schema asc","table","column desc"
-            };
+            IEnumerable<string> schema = new string[] { "dbo" };
+            IEnumerable<string> table = new string[] { "customer", "address" };
+            IEnumerable<string> column = new string[] { "username" };
+            IEnumerable<string> orderBy = new string[] { "schema asc", "table", "column desc" };
             await foreach (ManagedDatabaseColumnResource item in managedDatabase.GetManagedDatabaseColumnsByDatabaseAsync(schema: schema, table: table, column: column, orderBy: orderBy))
             {
                 // the variable item is a resource, you could call other operations on this instance as well
@@ -67,12 +188,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded on id: {resourceData.Id}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // List managed database columns
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetManagedDatabaseColumnsByDatabase_ListManagedDatabaseColumns()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedColumnsListByDatabaseMin.json
@@ -102,12 +222,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded on id: {resourceData.Id}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Obtain query properties
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetManagedDatabaseQuery_ObtainQueryProperties()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedInstanceQueryGet.json
@@ -134,9 +253,8 @@ namespace Azure.ResourceManager.Sql.Samples
             Console.WriteLine($"Succeeded: {result}");
         }
 
-        // Obtain query execution statistics
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetQueryStatistics_ObtainQueryExecutionStatistics()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedInstanceQueryStatisticsList.json
@@ -163,12 +281,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Obtain query execution statistics. Example with all request parameters.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetQueryStatistics_ObtainQueryExecutionStatisticsExampleWithAllRequestParameters()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedInstanceQueryStatisticsListMax.json
@@ -198,12 +315,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Obtain query execution statistics. Minimal example with only mandatory request parameters.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetQueryStatistics_ObtainQueryExecutionStatisticsMinimalExampleWithOnlyMandatoryRequestParameters()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedInstanceQueryStatisticsListMin.json
@@ -231,12 +347,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Get the managed database's security events with maximal parameters
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetManagedDatabaseSecurityEventsByDatabase_GetTheManagedDatabaseSSecurityEventsWithMaximalParameters()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSecurityEventsGetMax.json
@@ -266,12 +381,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Get the managed database's security events with minimal parameters
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetManagedDatabaseSecurityEventsByDatabase_GetTheManagedDatabaseSSecurityEventsWithMinimalParameters()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSecurityEventsGetMin.json
@@ -297,12 +411,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Gets the current sensitivity labels of a given database in a managed database
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetCurrentManagedDatabaseSensitivityLabels_GetsTheCurrentSensitivityLabelsOfAGivenDatabaseInAManagedDatabase()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSensitivityLabelsListByDatabaseCurrent.json
@@ -332,12 +445,11 @@ namespace Azure.ResourceManager.Sql.Samples
                 Console.WriteLine($"Succeeded on id: {resourceData.Id}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Update sensitivity labels of a given database using an operations batch.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task UpdateManagedDatabaseSensitivityLabel_UpdateSensitivityLabelsOfAGivenDatabaseUsingAnOperationsBatch()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSensitivityLabelsCurrentUpdate.json
@@ -358,53 +470,49 @@ namespace Azure.ResourceManager.Sql.Samples
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            SensitivityLabelUpdateList sensitivityLabelUpdateList = new SensitivityLabelUpdateList()
+            SensitivityLabelUpdateList sensitivityLabelUpdateList = new SensitivityLabelUpdateList
             {
-                Operations =
-{
-new SensitivityLabelUpdate()
+                Operations = {new SensitivityLabelUpdate
 {
 Op = SensitivityLabelUpdateKind.Set,
 Schema = "dbo",
 Table = "table1",
 Column = "column1",
-SensitivityLabel = new SensitivityLabelData()
+SensitivityLabel = new SensitivityLabelData
 {
 LabelName = "Highly Confidential",
 LabelId = "3A477B16-9423-432B-AA97-6069B481CEC3",
 InformationType = "Financial",
 InformationTypeId = "1D3652D6-422C-4115-82F1-65DAEBC665C8",
 },
-},new SensitivityLabelUpdate()
+}, new SensitivityLabelUpdate
 {
 Op = SensitivityLabelUpdateKind.Set,
 Schema = "dbo",
 Table = "table2",
 Column = "column2",
-SensitivityLabel = new SensitivityLabelData()
+SensitivityLabel = new SensitivityLabelData
 {
 LabelName = "PII",
 LabelId = "bf91e08c-f4f0-478a-b016-25164b2a65ff",
 InformationType = "PhoneNumber",
 InformationTypeId = "d22fa6e9-5ee4-3bde-4c2b-a409604c4646",
 },
-},new SensitivityLabelUpdate()
+}, new SensitivityLabelUpdate
 {
 Op = SensitivityLabelUpdateKind.Remove,
 Schema = "dbo",
 Table = "Table1",
 Column = "Column3",
-}
-},
+}},
             };
             await managedDatabase.UpdateManagedDatabaseSensitivityLabelAsync(sensitivityLabelUpdateList);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Gets the recommended sensitivity labels of a given database in a managed database
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetRecommendedManagedDatabaseSensitivityLabels_GetsTheRecommendedSensitivityLabelsOfAGivenDatabaseInAManagedDatabase()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSensitivityLabelsListByDatabaseRecommended.json
@@ -434,12 +542,11 @@ Column = "Column3",
                 Console.WriteLine($"Succeeded on id: {resourceData.Id}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Update recommended sensitivity labels of a given database using an operations batch.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task UpdateRecommendedManagedDatabaseSensitivityLabel_UpdateRecommendedSensitivityLabelsOfAGivenDatabaseUsingAnOperationsBatch()
         {
             // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2020-11-01-preview/examples/ManagedDatabaseSensitivityLabelsRecommendedUpdate.json
@@ -460,182 +567,38 @@ Column = "Column3",
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            RecommendedSensitivityLabelUpdateList recommendedSensitivityLabelUpdateList = new RecommendedSensitivityLabelUpdateList()
+            RecommendedSensitivityLabelUpdateList recommendedSensitivityLabelUpdateList = new RecommendedSensitivityLabelUpdateList
             {
-                Operations =
-{
-new RecommendedSensitivityLabelUpdate()
+                Operations = {new RecommendedSensitivityLabelUpdate
 {
 Op = RecommendedSensitivityLabelUpdateKind.Enable,
 Schema = "dbo",
 Table = "table1",
 Column = "column1",
-},new RecommendedSensitivityLabelUpdate()
+}, new RecommendedSensitivityLabelUpdate
 {
 Op = RecommendedSensitivityLabelUpdateKind.Disable,
 Schema = "dbo",
 Table = "table2",
 Column = "column2",
-},new RecommendedSensitivityLabelUpdate()
+}, new RecommendedSensitivityLabelUpdate
 {
 Op = RecommendedSensitivityLabelUpdateKind.Disable,
 Schema = "dbo",
 Table = "Table1",
 Column = "Column3",
-}
-},
+}},
             };
             await managedDatabase.UpdateRecommendedManagedDatabaseSensitivityLabelAsync(recommendedSensitivityLabelUpdateList);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Gets a managed database
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Get_GetsAManagedDatabase()
-        {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseGet.json
-            // this example is just showing the usage of "ManagedDatabases_Get" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this ManagedDatabaseResource created on azure
-            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
-            string subscriptionId = "00000000-1111-2222-3333-444444444444";
-            string resourceGroupName = "Test1";
-            string managedInstanceName = "managedInstance";
-            string databaseName = "managedDatabase";
-            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
-            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
-
-            // invoke the operation
-            ManagedDatabaseResource result = await managedDatabase.GetAsync();
-
-            // the variable result is a resource, you could call other operations on this instance as well
-            // but just for demo, we get its data from this resource instance
-            ManagedDatabaseData resourceData = result.Data;
-            // for demo we just print out the id
-            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
-        }
-
-        // Delete managed database
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Delete_DeleteManagedDatabase()
-        {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseDelete.json
-            // this example is just showing the usage of "ManagedDatabases_Delete" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this ManagedDatabaseResource created on azure
-            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
-            string subscriptionId = "00000000-1111-2222-3333-444444444444";
-            string resourceGroupName = "Default-SQL-SouthEastAsia";
-            string managedInstanceName = "managedInstance";
-            string databaseName = "testdb";
-            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
-            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
-
-            // invoke the operation
-            await managedDatabase.DeleteAsync(WaitUntil.Completed);
-
-            Console.WriteLine($"Succeeded");
-        }
-
-        // Updates a managed database with maximal properties
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Update_UpdatesAManagedDatabaseWithMaximalProperties()
-        {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseUpdateMax.json
-            // this example is just showing the usage of "ManagedDatabases_Update" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this ManagedDatabaseResource created on azure
-            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
-            string subscriptionId = "00000000-1111-2222-3333-444444444444";
-            string resourceGroupName = "Default-SQL-SouthEastAsia";
-            string managedInstanceName = "managedInstance";
-            string databaseName = "testdb";
-            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
-            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
-
-            // invoke the operation
-            ManagedDatabasePatch patch = new ManagedDatabasePatch()
-            {
-                Tags =
-{
-["tagKey1"] = "TagValue1",
-},
-            };
-            ArmOperation<ManagedDatabaseResource> lro = await managedDatabase.UpdateAsync(WaitUntil.Completed, patch);
-            ManagedDatabaseResource result = lro.Value;
-
-            // the variable result is a resource, you could call other operations on this instance as well
-            // but just for demo, we get its data from this resource instance
-            ManagedDatabaseData resourceData = result.Data;
-            // for demo we just print out the id
-            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
-        }
-
-        // Updates a managed database with minimal properties
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Update_UpdatesAManagedDatabaseWithMinimalProperties()
-        {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseUpdateMin.json
-            // this example is just showing the usage of "ManagedDatabases_Update" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this ManagedDatabaseResource created on azure
-            // for more information of creating ManagedDatabaseResource, please refer to the document of ManagedDatabaseResource
-            string subscriptionId = "00000000-1111-2222-3333-444444444444";
-            string resourceGroupName = "Default-SQL-SouthEastAsia";
-            string managedInstanceName = "managedInstance";
-            string databaseName = "testdb";
-            ResourceIdentifier managedDatabaseResourceId = ManagedDatabaseResource.CreateResourceIdentifier(subscriptionId, resourceGroupName, managedInstanceName, databaseName);
-            ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
-
-            // invoke the operation
-            ManagedDatabasePatch patch = new ManagedDatabasePatch()
-            {
-                Tags =
-{
-["tagKey1"] = "TagValue1",
-},
-            };
-            ArmOperation<ManagedDatabaseResource> lro = await managedDatabase.UpdateAsync(WaitUntil.Completed, patch);
-            ManagedDatabaseResource result = lro.Value;
-
-            // the variable result is a resource, you could call other operations on this instance as well
-            // but just for demo, we get its data from this resource instance
-            ManagedDatabaseData resourceData = result.Data;
-            // for demo we just print out the id
-            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
-        }
-
-        // Cancels a managed database move.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task CancelMove_CancelsAManagedDatabaseMove()
         {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseCancelMove.json
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseCancelMove.json
             // this example is just showing the usage of "ManagedDatabases_CancelMove" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -653,18 +616,17 @@ Column = "Column3",
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            ManagedDatabaseMoveDefinition managedDatabaseMoveDefinition = new ManagedDatabaseMoveDefinition(new ResourceIdentifier("subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
+            ManagedDatabaseMoveDefinition managedDatabaseMoveDefinition = new ManagedDatabaseMoveDefinition(new ResourceIdentifier("/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
             await managedDatabase.CancelMoveAsync(WaitUntil.Completed, managedDatabaseMoveDefinition);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Completes a managed database move.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task CompleteMove_CompletesAManagedDatabaseMove()
         {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseCompleteMove.json
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseCompleteMove.json
             // this example is just showing the usage of "ManagedDatabases_CompleteMove" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -682,18 +644,17 @@ Column = "Column3",
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            ManagedDatabaseMoveDefinition managedDatabaseMoveDefinition = new ManagedDatabaseMoveDefinition(new ResourceIdentifier("subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
+            ManagedDatabaseMoveDefinition managedDatabaseMoveDefinition = new ManagedDatabaseMoveDefinition(new ResourceIdentifier("/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
             await managedDatabase.CompleteMoveAsync(WaitUntil.Completed, managedDatabaseMoveDefinition);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Completes a managed database external backup restore.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task CompleteRestore_CompletesAManagedDatabaseExternalBackupRestore()
         {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseCompleteExternalRestore.json
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseCompleteExternalRestore.json
             // this example is just showing the usage of "ManagedDatabases_CompleteRestore" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -714,15 +675,14 @@ Column = "Column3",
             CompleteDatabaseRestoreDefinition completeDatabaseRestoreDefinition = new CompleteDatabaseRestoreDefinition("testdb1_log4");
             await managedDatabase.CompleteRestoreAsync(WaitUntil.Completed, completeDatabaseRestoreDefinition);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Starts a managed database move with all optional parameters specified.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task StartMove_StartsAManagedDatabaseMoveWithAllOptionalParametersSpecified()
         {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseStartMoveMax.json
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseStartMoveMax.json
             // this example is just showing the usage of "ManagedDatabases_StartMove" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -740,21 +700,20 @@ Column = "Column3",
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            ManagedDatabaseStartMoveDefinition managedDatabaseStartMoveDefinition = new ManagedDatabaseStartMoveDefinition(new ResourceIdentifier("subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"))
+            ManagedDatabaseStartMoveDefinition managedDatabaseStartMoveDefinition = new ManagedDatabaseStartMoveDefinition(new ResourceIdentifier("/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"))
             {
                 OperationMode = ManagedDatabaseMoveOperationMode.Copy,
             };
             await managedDatabase.StartMoveAsync(WaitUntil.Completed, managedDatabaseStartMoveDefinition);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Starts a managed database move with no optional parameters specified.
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task StartMove_StartsAManagedDatabaseMoveWithNoOptionalParametersSpecified()
         {
-            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-05-01-preview/examples/ManagedDatabaseStartMoveMin.json
+            // Generated from example definition: specification/sql/resource-manager/Microsoft.Sql/preview/2022-08-01-preview/examples/ManagedDatabaseStartMoveMin.json
             // this example is just showing the usage of "ManagedDatabases_StartMove" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -772,10 +731,10 @@ Column = "Column3",
             ManagedDatabaseResource managedDatabase = client.GetManagedDatabaseResource(managedDatabaseResourceId);
 
             // invoke the operation
-            ManagedDatabaseStartMoveDefinition managedDatabaseStartMoveDefinition = new ManagedDatabaseStartMoveDefinition(new ResourceIdentifier("subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
+            ManagedDatabaseStartMoveDefinition managedDatabaseStartMoveDefinition = new ManagedDatabaseStartMoveDefinition(new ResourceIdentifier("/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/group1/providers/Microsoft.Sql/managedInstances/testInstanceTgt/databases/testDatabase"));
             await managedDatabase.StartMoveAsync(WaitUntil.Completed, managedDatabaseStartMoveDefinition);
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
     }
 }

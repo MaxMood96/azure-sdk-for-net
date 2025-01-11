@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -18,15 +17,14 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<DeviceTwinProperties> desired = default;
-            Optional<DeviceTwinProperties> reported = default;
+            DeviceTwinProperties desired = default;
+            DeviceTwinProperties reported = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("desired"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     desired = DeviceTwinProperties.DeserializeDeviceTwinProperties(property.Value);
@@ -36,14 +34,21 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     reported = DeviceTwinProperties.DeserializeDeviceTwinProperties(property.Value);
                     continue;
                 }
             }
-            return new DeviceTwinInfoProperties(desired.Value, reported.Value);
+            return new DeviceTwinInfoProperties(desired, reported);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DeviceTwinInfoProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDeviceTwinInfoProperties(document.RootElement);
         }
     }
 }

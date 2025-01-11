@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Data.Tables.Models
 {
@@ -19,8 +18,8 @@ namespace Azure.Data.Tables.Models
             {
                 return null;
             }
-            Optional<string> odataMetadata = default;
-            Optional<IReadOnlyList<IDictionary<string, object>>> value = default;
+            string odataMetadata = default;
+            IReadOnlyList<IDictionary<string, object>> value = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("odata.metadata"u8))
@@ -32,7 +31,6 @@ namespace Azure.Data.Tables.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<IDictionary<string, object>> array = new List<IDictionary<string, object>>();
@@ -63,7 +61,15 @@ namespace Azure.Data.Tables.Models
                     continue;
                 }
             }
-            return new TableEntityQueryResponse(odataMetadata.Value, Optional.ToList(value));
+            return new TableEntityQueryResponse(odataMetadata, value ?? new ChangeTrackingList<IDictionary<string, object>>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static TableEntityQueryResponse FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeTableEntityQueryResponse(document.RootElement);
         }
     }
 }

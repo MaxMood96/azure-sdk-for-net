@@ -45,9 +45,16 @@ namespace Azure.Identity.Tests
             {
                 var options = new EnvironmentCredentialOptions
                 {
-                    Transport = config.Transport,
                     DisableInstanceDiscovery = config.DisableInstanceDiscovery,
+                    IsUnsafeSupportLoggingEnabled = config.IsUnsafeSupportLoggingEnabled,
+                    MsalConfidentialClient = config.MockConfidentialMsalClient,
+                    MsalPublicClient = config.MockPublicMsalClient,
+                    AuthorityHost = config.AuthorityHost,
                 };
+                if (config.Transport != null)
+                {
+                    options.Transport = config.Transport;
+                }
 
                 return InstrumentClient(new EnvironmentCredential(options));
             }

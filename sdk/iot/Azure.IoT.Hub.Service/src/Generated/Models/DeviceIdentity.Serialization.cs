@@ -90,19 +90,19 @@ namespace Azure.IoT.Hub.Service.Models
             {
                 return null;
             }
-            Optional<string> deviceId = default;
-            Optional<string> generationId = default;
-            Optional<string> etag = default;
-            Optional<DeviceConnectionState> connectionState = default;
-            Optional<DeviceStatus> status = default;
-            Optional<string> statusReason = default;
-            Optional<DateTimeOffset> connectionStateUpdatedTime = default;
-            Optional<DateTimeOffset> statusUpdatedTime = default;
-            Optional<DateTimeOffset> lastActivityTime = default;
-            Optional<int> cloudToDeviceMessageCount = default;
-            Optional<AuthenticationMechanism> authentication = default;
-            Optional<DeviceCapabilities> capabilities = default;
-            Optional<string> deviceScope = default;
+            string deviceId = default;
+            string generationId = default;
+            string etag = default;
+            DeviceConnectionState? connectionState = default;
+            DeviceStatus? status = default;
+            string statusReason = default;
+            DateTimeOffset? connectionStateUpdatedTime = default;
+            DateTimeOffset? statusUpdatedTime = default;
+            DateTimeOffset? lastActivityTime = default;
+            int? cloudToDeviceMessageCount = default;
+            AuthenticationMechanism authentication = default;
+            DeviceCapabilities capabilities = default;
+            string deviceScope = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("deviceId"u8))
@@ -124,7 +124,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     connectionState = new DeviceConnectionState(property.Value.GetString());
@@ -134,7 +133,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     status = new DeviceStatus(property.Value.GetString());
@@ -149,7 +147,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     connectionStateUpdatedTime = property.Value.GetDateTimeOffset("O");
@@ -159,7 +156,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     statusUpdatedTime = property.Value.GetDateTimeOffset("O");
@@ -169,7 +165,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lastActivityTime = property.Value.GetDateTimeOffset("O");
@@ -179,7 +174,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     cloudToDeviceMessageCount = property.Value.GetInt32();
@@ -189,7 +183,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     authentication = AuthenticationMechanism.DeserializeAuthenticationMechanism(property.Value);
@@ -199,7 +192,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     capabilities = DeviceCapabilities.DeserializeDeviceCapabilities(property.Value);
@@ -211,7 +203,36 @@ namespace Azure.IoT.Hub.Service.Models
                     continue;
                 }
             }
-            return new DeviceIdentity(deviceId.Value, generationId.Value, etag.Value, Optional.ToNullable(connectionState), Optional.ToNullable(status), statusReason.Value, Optional.ToNullable(connectionStateUpdatedTime), Optional.ToNullable(statusUpdatedTime), Optional.ToNullable(lastActivityTime), Optional.ToNullable(cloudToDeviceMessageCount), authentication.Value, capabilities.Value, deviceScope.Value);
+            return new DeviceIdentity(
+                deviceId,
+                generationId,
+                etag,
+                connectionState,
+                status,
+                statusReason,
+                connectionStateUpdatedTime,
+                statusUpdatedTime,
+                lastActivityTime,
+                cloudToDeviceMessageCount,
+                authentication,
+                capabilities,
+                deviceScope);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DeviceIdentity FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDeviceIdentity(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

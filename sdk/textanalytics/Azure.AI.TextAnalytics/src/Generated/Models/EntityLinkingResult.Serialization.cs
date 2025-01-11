@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.AI.TextAnalytics;
 using Azure.Core;
 
 namespace Azure.AI.TextAnalytics.Models
@@ -47,28 +46,28 @@ namespace Azure.AI.TextAnalytics.Models
             {
                 return null;
             }
-            IList<EntityLinkingResultWithDetectedLanguage> documents = default;
-            IList<InputError> errors = default;
-            Optional<TextDocumentBatchStatistics> statistics = default;
+            IList<EntityLinkingResultDocumentsItem> documents = default;
+            IList<DocumentError> errors = default;
+            TextDocumentBatchStatistics statistics = default;
             string modelVersion = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("documents"u8))
                 {
-                    List<EntityLinkingResultWithDetectedLanguage> array = new List<EntityLinkingResultWithDetectedLanguage>();
+                    List<EntityLinkingResultDocumentsItem> array = new List<EntityLinkingResultDocumentsItem>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(EntityLinkingResultWithDetectedLanguage.DeserializeEntityLinkingResultWithDetectedLanguage(item));
+                        array.Add(EntityLinkingResultDocumentsItem.DeserializeEntityLinkingResultDocumentsItem(item));
                     }
                     documents = array;
                     continue;
                 }
                 if (property.NameEquals("errors"u8))
                 {
-                    List<InputError> array = new List<InputError>();
+                    List<DocumentError> array = new List<DocumentError>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(InputError.DeserializeInputError(item));
+                        array.Add(DocumentError.DeserializeDocumentError(item));
                     }
                     errors = array;
                     continue;
@@ -77,7 +76,6 @@ namespace Azure.AI.TextAnalytics.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     statistics = TextDocumentBatchStatistics.DeserializeTextDocumentBatchStatistics(property.Value);
@@ -89,7 +87,23 @@ namespace Azure.AI.TextAnalytics.Models
                     continue;
                 }
             }
-            return new EntityLinkingResult(errors, statistics.Value, modelVersion, documents);
+            return new EntityLinkingResult(errors, statistics, modelVersion, documents);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new EntityLinkingResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeEntityLinkingResult(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

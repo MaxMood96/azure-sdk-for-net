@@ -39,16 +39,15 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
             {
                 return null;
             }
-            Optional<SpatialAnalysisPersonZoneCrossingEventType> eventType = default;
-            Optional<string> threshold = default;
-            Optional<SpatialAnalysisOperationFocus> focus = default;
+            SpatialAnalysisPersonZoneCrossingEventType? eventType = default;
+            string threshold = default;
+            SpatialAnalysisOperationFocus? focus = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("eventType"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     eventType = new SpatialAnalysisPersonZoneCrossingEventType(property.Value.GetString());
@@ -63,14 +62,29 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     focus = new SpatialAnalysisOperationFocus(property.Value.GetString());
                     continue;
                 }
             }
-            return new SpatialAnalysisPersonZoneCrossingEvent(threshold.Value, Optional.ToNullable(focus), Optional.ToNullable(eventType));
+            return new SpatialAnalysisPersonZoneCrossingEvent(threshold, focus, eventType);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new SpatialAnalysisPersonZoneCrossingEvent FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeSpatialAnalysisPersonZoneCrossingEvent(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

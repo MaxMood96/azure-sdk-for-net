@@ -38,8 +38,8 @@ namespace Azure.Search.Documents.Indexes.Models
             {
                 return null;
             }
-            Optional<PhoneticEncoder> encoder = default;
-            Optional<bool> replace = default;
+            PhoneticEncoder? encoder = default;
+            bool? replace = default;
             string odataType = default;
             string name = default;
             foreach (var property in element.EnumerateObject())
@@ -48,7 +48,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     encoder = property.Value.GetString().ToPhoneticEncoder();
@@ -58,7 +57,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     replace = property.Value.GetBoolean();
@@ -75,7 +73,23 @@ namespace Azure.Search.Documents.Indexes.Models
                     continue;
                 }
             }
-            return new PhoneticTokenFilter(odataType, name, Optional.ToNullable(encoder), Optional.ToNullable(replace));
+            return new PhoneticTokenFilter(odataType, name, encoder, replace);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new PhoneticTokenFilter FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializePhoneticTokenFilter(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

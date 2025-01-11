@@ -6,31 +6,40 @@
 #nullable disable
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure;
 using Azure.Core;
 
 namespace Azure.AI.AnomalyDetector
 {
-    public partial class ModelInfo : IUtf8JsonSerializable
+    public partial class ModelInfo : IUtf8JsonSerializable, IJsonModel<ModelInfo>
     {
-        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer) => ((IJsonModel<ModelInfo>)this).Write(writer, ModelSerializationExtensions.WireOptions);
+
+        void IJsonModel<ModelInfo>.Write(Utf8JsonWriter writer, ModelReaderWriterOptions options)
         {
             writer.WriteStartObject();
+            JsonModelWriteCore(writer, options);
+            writer.WriteEndObject();
+        }
+
+        /// <param name="writer"> The JSON writer. </param>
+        /// <param name="options"> The client options for reading and writing models. </param>
+        protected virtual void JsonModelWriteCore(Utf8JsonWriter writer, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ModelInfo>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ModelInfo)} does not support writing '{format}' format.");
+            }
+
             writer.WritePropertyName("dataSource"u8);
-            writer.WriteStringValue(DataSource);
+            writer.WriteStringValue(DataSource.AbsoluteUri);
             if (Optional.IsDefined(DataSchema))
             {
-                if (DataSchema != null)
-                {
-                    writer.WritePropertyName("dataSchema"u8);
-                    writer.WriteStringValue(DataSchema.Value.ToString());
-                }
-                else
-                {
-                    writer.WriteNull("dataSchema");
-                }
+                writer.WritePropertyName("dataSchema"u8);
+                writer.WriteStringValue(DataSchema.Value.ToString());
             }
             writer.WritePropertyName("startTime"u8);
             writer.WriteStringValue(StartTime, "O");
@@ -43,69 +52,94 @@ namespace Azure.AI.AnomalyDetector
             }
             if (Optional.IsDefined(SlidingWindow))
             {
-                if (SlidingWindow != null)
-                {
-                    writer.WritePropertyName("slidingWindow"u8);
-                    writer.WriteNumberValue(SlidingWindow.Value);
-                }
-                else
-                {
-                    writer.WriteNull("slidingWindow");
-                }
+                writer.WritePropertyName("slidingWindow"u8);
+                writer.WriteNumberValue(SlidingWindow.Value);
             }
             if (Optional.IsDefined(AlignPolicy))
             {
                 writer.WritePropertyName("alignPolicy"u8);
-                writer.WriteObjectValue(AlignPolicy);
+                writer.WriteObjectValue(AlignPolicy, options);
             }
-            if (Optional.IsDefined(Status))
+            if (options.Format != "W" && Optional.IsDefined(Status))
             {
-                if (Status != null)
-                {
-                    writer.WritePropertyName("status"u8);
-                    writer.WriteStringValue(Status.Value.ToSerialString());
-                }
-                else
-                {
-                    writer.WriteNull("status");
-                }
+                writer.WritePropertyName("status"u8);
+                writer.WriteStringValue(Status.Value.ToString());
             }
-            if (Optional.IsDefined(DiagnosticsInfo))
+            if (options.Format != "W" && Optional.IsCollectionDefined(Errors))
+            {
+                writer.WritePropertyName("errors"u8);
+                writer.WriteStartArray();
+                foreach (var item in Errors)
+                {
+                    writer.WriteObjectValue(item, options);
+                }
+                writer.WriteEndArray();
+            }
+            if (options.Format != "W" && Optional.IsDefined(DiagnosticsInfo))
             {
                 writer.WritePropertyName("diagnosticsInfo"u8);
-                writer.WriteObjectValue(DiagnosticsInfo);
+                writer.WriteObjectValue(DiagnosticsInfo, options);
             }
-            writer.WriteEndObject();
+            if (options.Format != "W" && _serializedAdditionalRawData != null)
+            {
+                foreach (var item in _serializedAdditionalRawData)
+                {
+                    writer.WritePropertyName(item.Key);
+#if NET6_0_OR_GREATER
+				writer.WriteRawValue(item.Value);
+#else
+                    using (JsonDocument document = JsonDocument.Parse(item.Value))
+                    {
+                        JsonSerializer.Serialize(writer, document.RootElement);
+                    }
+#endif
+                }
+            }
         }
 
-        internal static ModelInfo DeserializeModelInfo(JsonElement element)
+        ModelInfo IJsonModel<ModelInfo>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options)
         {
+            var format = options.Format == "W" ? ((IPersistableModel<ModelInfo>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ModelInfo)} does not support reading '{format}' format.");
+            }
+
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return DeserializeModelInfo(document.RootElement, options);
+        }
+
+        internal static ModelInfo DeserializeModelInfo(JsonElement element, ModelReaderWriterOptions options = null)
+        {
+            options ??= ModelSerializationExtensions.WireOptions;
+
             if (element.ValueKind == JsonValueKind.Null)
             {
                 return null;
             }
-            string dataSource = default;
-            Optional<DataSchema?> dataSchema = default;
+            Uri dataSource = default;
+            DataSchema? dataSchema = default;
             DateTimeOffset startTime = default;
             DateTimeOffset endTime = default;
-            Optional<string> displayName = default;
-            Optional<int?> slidingWindow = default;
-            Optional<AlignPolicy> alignPolicy = default;
-            Optional<ModelStatus?> status = default;
-            Optional<IReadOnlyList<ErrorResponse>> errors = default;
-            Optional<DiagnosticsInfo> diagnosticsInfo = default;
+            string displayName = default;
+            int? slidingWindow = default;
+            AlignPolicy alignPolicy = default;
+            ModelStatus? status = default;
+            IReadOnlyList<ErrorResponse> errors = default;
+            DiagnosticsInfo diagnosticsInfo = default;
+            IDictionary<string, BinaryData> serializedAdditionalRawData = default;
+            Dictionary<string, BinaryData> rawDataDictionary = new Dictionary<string, BinaryData>();
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("dataSource"u8))
                 {
-                    dataSource = property.Value.GetString();
+                    dataSource = new Uri(property.Value.GetString());
                     continue;
                 }
                 if (property.NameEquals("dataSchema"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        dataSchema = null;
                         continue;
                     }
                     dataSchema = new DataSchema(property.Value.GetString());
@@ -130,7 +164,6 @@ namespace Azure.AI.AnomalyDetector
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        slidingWindow = null;
                         continue;
                     }
                     slidingWindow = property.Value.GetInt32();
@@ -140,33 +173,30 @@ namespace Azure.AI.AnomalyDetector
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    alignPolicy = AlignPolicy.DeserializeAlignPolicy(property.Value);
+                    alignPolicy = AlignPolicy.DeserializeAlignPolicy(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("status"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        status = null;
                         continue;
                     }
-                    status = property.Value.GetString().ToModelStatus();
+                    status = new ModelStatus(property.Value.GetString());
                     continue;
                 }
                 if (property.NameEquals("errors"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ErrorResponse> array = new List<ErrorResponse>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(ErrorResponse.DeserializeErrorResponse(item));
+                        array.Add(ErrorResponse.DeserializeErrorResponse(item, options));
                     }
                     errors = array;
                     continue;
@@ -175,15 +205,61 @@ namespace Azure.AI.AnomalyDetector
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    diagnosticsInfo = DiagnosticsInfo.DeserializeDiagnosticsInfo(property.Value);
+                    diagnosticsInfo = DiagnosticsInfo.DeserializeDiagnosticsInfo(property.Value, options);
                     continue;
                 }
+                if (options.Format != "W")
+                {
+                    rawDataDictionary.Add(property.Name, BinaryData.FromString(property.Value.GetRawText()));
+                }
             }
-            return new ModelInfo(dataSource, Optional.ToNullable(dataSchema), startTime, endTime, displayName, Optional.ToNullable(slidingWindow), alignPolicy, Optional.ToNullable(status), Optional.ToList(errors), diagnosticsInfo);
+            serializedAdditionalRawData = rawDataDictionary;
+            return new ModelInfo(
+                dataSource,
+                dataSchema,
+                startTime,
+                endTime,
+                displayName,
+                slidingWindow,
+                alignPolicy,
+                status,
+                errors ?? new ChangeTrackingList<ErrorResponse>(),
+                diagnosticsInfo,
+                serializedAdditionalRawData);
         }
+
+        BinaryData IPersistableModel<ModelInfo>.Write(ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ModelInfo>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    return ModelReaderWriter.Write(this, options);
+                default:
+                    throw new FormatException($"The model {nameof(ModelInfo)} does not support writing '{options.Format}' format.");
+            }
+        }
+
+        ModelInfo IPersistableModel<ModelInfo>.Create(BinaryData data, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ModelInfo>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    {
+                        using JsonDocument document = JsonDocument.Parse(data);
+                        return DeserializeModelInfo(document.RootElement, options);
+                    }
+                default:
+                    throw new FormatException($"The model {nameof(ModelInfo)} does not support reading '{options.Format}' format.");
+            }
+        }
+
+        string IPersistableModel<ModelInfo>.GetFormatFromOptions(ModelReaderWriterOptions options) => "J";
 
         /// <summary> Deserializes the model from a raw response. </summary>
         /// <param name="response"> The response to deserialize the model from. </param>
@@ -193,11 +269,11 @@ namespace Azure.AI.AnomalyDetector
             return DeserializeModelInfo(document.RootElement);
         }
 
-        /// <summary> Convert into a Utf8JsonRequestContent. </summary>
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
         internal virtual RequestContent ToRequestContent()
         {
             var content = new Utf8JsonRequestContent();
-            content.JsonWriter.WriteObjectValue(this);
+            content.JsonWriter.WriteObjectValue(this, ModelSerializationExtensions.WireOptions);
             return content;
         }
     }

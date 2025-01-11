@@ -6,105 +6,84 @@
 #nullable disable
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.Core.Expressions.DataFactory;
 
 namespace Azure.ResourceManager.DataFactory.Models
 {
-    public partial class ExecuteWranglingDataflowActivity : IUtf8JsonSerializable
+    public partial class ExecuteWranglingDataflowActivity : IUtf8JsonSerializable, IJsonModel<ExecuteWranglingDataflowActivity>
     {
-        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer) => ((IJsonModel<ExecuteWranglingDataflowActivity>)this).Write(writer, ModelSerializationExtensions.WireOptions);
+
+        void IJsonModel<ExecuteWranglingDataflowActivity>.Write(Utf8JsonWriter writer, ModelReaderWriterOptions options)
         {
             writer.WriteStartObject();
+            JsonModelWriteCore(writer, options);
+            writer.WriteEndObject();
+        }
+
+        /// <param name="writer"> The JSON writer. </param>
+        /// <param name="options"> The client options for reading and writing models. </param>
+        protected override void JsonModelWriteCore(Utf8JsonWriter writer, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ExecuteWranglingDataflowActivity>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ExecuteWranglingDataflowActivity)} does not support writing '{format}' format.");
+            }
+
+            base.JsonModelWriteCore(writer, options);
             if (Optional.IsDefined(Policy))
             {
                 writer.WritePropertyName("policy"u8);
-                writer.WriteObjectValue(Policy);
-            }
-            writer.WritePropertyName("name"u8);
-            writer.WriteStringValue(Name);
-            writer.WritePropertyName("type"u8);
-            writer.WriteStringValue(ActivityType);
-            if (Optional.IsDefined(Description))
-            {
-                writer.WritePropertyName("description"u8);
-                writer.WriteStringValue(Description);
-            }
-            if (Optional.IsCollectionDefined(DependsOn))
-            {
-                writer.WritePropertyName("dependsOn"u8);
-                writer.WriteStartArray();
-                foreach (var item in DependsOn)
-                {
-                    writer.WriteObjectValue(item);
-                }
-                writer.WriteEndArray();
-            }
-            if (Optional.IsCollectionDefined(UserProperties))
-            {
-                writer.WritePropertyName("userProperties"u8);
-                writer.WriteStartArray();
-                foreach (var item in UserProperties)
-                {
-                    writer.WriteObjectValue(item);
-                }
-                writer.WriteEndArray();
+                writer.WriteObjectValue(Policy, options);
             }
             writer.WritePropertyName("typeProperties"u8);
             writer.WriteStartObject();
             writer.WritePropertyName("dataFlow"u8);
-            writer.WriteObjectValue(DataFlow);
+            writer.WriteObjectValue(DataFlow, options);
             if (Optional.IsDefined(Staging))
             {
                 writer.WritePropertyName("staging"u8);
-                writer.WriteObjectValue(Staging);
+                writer.WriteObjectValue(Staging, options);
             }
             if (Optional.IsDefined(IntegrationRuntime))
             {
                 writer.WritePropertyName("integrationRuntime"u8);
-                writer.WriteObjectValue(IntegrationRuntime);
+                writer.WriteObjectValue(IntegrationRuntime, options);
+            }
+            if (Optional.IsDefined(ContinuationSettings))
+            {
+                writer.WritePropertyName("continuationSettings"u8);
+                writer.WriteObjectValue(ContinuationSettings, options);
             }
             if (Optional.IsDefined(Compute))
             {
                 writer.WritePropertyName("compute"u8);
-                writer.WriteObjectValue(Compute);
+                writer.WriteObjectValue(Compute, options);
             }
             if (Optional.IsDefined(TraceLevel))
             {
                 writer.WritePropertyName("traceLevel"u8);
-#if NET6_0_OR_GREATER
-				writer.WriteRawValue(TraceLevel);
-#else
-                JsonSerializer.Serialize(writer, JsonDocument.Parse(TraceLevel.ToString()).RootElement);
-#endif
+                JsonSerializer.Serialize(writer, TraceLevel);
             }
             if (Optional.IsDefined(ContinueOnError))
             {
                 writer.WritePropertyName("continueOnError"u8);
-#if NET6_0_OR_GREATER
-				writer.WriteRawValue(ContinueOnError);
-#else
-                JsonSerializer.Serialize(writer, JsonDocument.Parse(ContinueOnError.ToString()).RootElement);
-#endif
+                JsonSerializer.Serialize(writer, ContinueOnError);
             }
             if (Optional.IsDefined(RunConcurrently))
             {
                 writer.WritePropertyName("runConcurrently"u8);
-#if NET6_0_OR_GREATER
-				writer.WriteRawValue(RunConcurrently);
-#else
-                JsonSerializer.Serialize(writer, JsonDocument.Parse(RunConcurrently.ToString()).RootElement);
-#endif
+                JsonSerializer.Serialize(writer, RunConcurrently);
             }
             if (Optional.IsDefined(SourceStagingConcurrency))
             {
                 writer.WritePropertyName("sourceStagingConcurrency"u8);
-#if NET6_0_OR_GREATER
-				writer.WriteRawValue(SourceStagingConcurrency);
-#else
-                JsonSerializer.Serialize(writer, JsonDocument.Parse(SourceStagingConcurrency.ToString()).RootElement);
-#endif
+                JsonSerializer.Serialize(writer, SourceStagingConcurrency);
             }
             if (Optional.IsCollectionDefined(Sinks))
             {
@@ -113,7 +92,7 @@ namespace Azure.ResourceManager.DataFactory.Models
                 foreach (var item in Sinks)
                 {
                     writer.WritePropertyName(item.Key);
-                    writer.WriteObjectValue(item.Value);
+                    writer.WriteObjectValue(item.Value, options);
                 }
                 writer.WriteEndObject();
             }
@@ -123,7 +102,7 @@ namespace Azure.ResourceManager.DataFactory.Models
                 writer.WriteStartArray();
                 foreach (var item in Queries)
                 {
-                    writer.WriteObjectValue(item);
+                    writer.WriteObjectValue(item, options);
                 }
                 writer.WriteEndArray();
             }
@@ -134,34 +113,53 @@ namespace Azure.ResourceManager.DataFactory.Models
 #if NET6_0_OR_GREATER
 				writer.WriteRawValue(item.Value);
 #else
-                JsonSerializer.Serialize(writer, JsonDocument.Parse(item.Value.ToString()).RootElement);
+                using (JsonDocument document = JsonDocument.Parse(item.Value))
+                {
+                    JsonSerializer.Serialize(writer, document.RootElement);
+                }
 #endif
             }
-            writer.WriteEndObject();
         }
 
-        internal static ExecuteWranglingDataflowActivity DeserializeExecuteWranglingDataflowActivity(JsonElement element)
+        ExecuteWranglingDataflowActivity IJsonModel<ExecuteWranglingDataflowActivity>.Create(ref Utf8JsonReader reader, ModelReaderWriterOptions options)
         {
+            var format = options.Format == "W" ? ((IPersistableModel<ExecuteWranglingDataflowActivity>)this).GetFormatFromOptions(options) : options.Format;
+            if (format != "J")
+            {
+                throw new FormatException($"The model {nameof(ExecuteWranglingDataflowActivity)} does not support reading '{format}' format.");
+            }
+
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return DeserializeExecuteWranglingDataflowActivity(document.RootElement, options);
+        }
+
+        internal static ExecuteWranglingDataflowActivity DeserializeExecuteWranglingDataflowActivity(JsonElement element, ModelReaderWriterOptions options = null)
+        {
+            options ??= ModelSerializationExtensions.WireOptions;
+
             if (element.ValueKind == JsonValueKind.Null)
             {
                 return null;
             }
-            Optional<ActivityPolicy> policy = default;
+            PipelineActivityPolicy policy = default;
             string name = default;
             string type = default;
-            Optional<string> description = default;
-            Optional<IList<ActivityDependency>> dependsOn = default;
-            Optional<IList<ActivityUserProperty>> userProperties = default;
+            string description = default;
+            PipelineActivityState? state = default;
+            ActivityOnInactiveMarkAs? onInactiveMarkAs = default;
+            IList<PipelineActivityDependency> dependsOn = default;
+            IList<PipelineActivityUserProperty> userProperties = default;
             DataFlowReference dataFlow = default;
-            Optional<DataFlowStagingInfo> staging = default;
-            Optional<IntegrationRuntimeReference> integrationRuntime = default;
-            Optional<ExecuteDataFlowActivityTypePropertiesCompute> compute = default;
-            Optional<BinaryData> traceLevel = default;
-            Optional<BinaryData> continueOnError = default;
-            Optional<BinaryData> runConcurrently = default;
-            Optional<BinaryData> sourceStagingConcurrency = default;
-            Optional<IDictionary<string, PowerQuerySink>> sinks = default;
-            Optional<IList<PowerQuerySinkMapping>> queries = default;
+            DataFlowStagingInfo staging = default;
+            IntegrationRuntimeReference integrationRuntime = default;
+            ContinuationSettingsReference continuationSettings = default;
+            ExecuteDataFlowActivityComputeType compute = default;
+            DataFactoryElement<string> traceLevel = default;
+            DataFactoryElement<bool> continueOnError = default;
+            DataFactoryElement<bool> runConcurrently = default;
+            DataFactoryElement<int> sourceStagingConcurrency = default;
+            IDictionary<string, PowerQuerySink> sinks = default;
+            IList<PowerQuerySinkMapping> queries = default;
             IDictionary<string, BinaryData> additionalProperties = default;
             Dictionary<string, BinaryData> additionalPropertiesDictionary = new Dictionary<string, BinaryData>();
             foreach (var property in element.EnumerateObject())
@@ -170,10 +168,9 @@ namespace Azure.ResourceManager.DataFactory.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    policy = ActivityPolicy.DeserializeActivityPolicy(property.Value);
+                    policy = PipelineActivityPolicy.DeserializePipelineActivityPolicy(property.Value, options);
                     continue;
                 }
                 if (property.NameEquals("name"u8))
@@ -191,17 +188,34 @@ namespace Azure.ResourceManager.DataFactory.Models
                     description = property.Value.GetString();
                     continue;
                 }
+                if (property.NameEquals("state"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    state = new PipelineActivityState(property.Value.GetString());
+                    continue;
+                }
+                if (property.NameEquals("onInactiveMarkAs"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    onInactiveMarkAs = new ActivityOnInactiveMarkAs(property.Value.GetString());
+                    continue;
+                }
                 if (property.NameEquals("dependsOn"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<ActivityDependency> array = new List<ActivityDependency>();
+                    List<PipelineActivityDependency> array = new List<PipelineActivityDependency>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(ActivityDependency.DeserializeActivityDependency(item));
+                        array.Add(PipelineActivityDependency.DeserializePipelineActivityDependency(item, options));
                     }
                     dependsOn = array;
                     continue;
@@ -210,13 +224,12 @@ namespace Azure.ResourceManager.DataFactory.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<ActivityUserProperty> array = new List<ActivityUserProperty>();
+                    List<PipelineActivityUserProperty> array = new List<PipelineActivityUserProperty>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(ActivityUserProperty.DeserializeActivityUserProperty(item));
+                        array.Add(PipelineActivityUserProperty.DeserializePipelineActivityUserProperty(item, options));
                     }
                     userProperties = array;
                     continue;
@@ -232,90 +245,91 @@ namespace Azure.ResourceManager.DataFactory.Models
                     {
                         if (property0.NameEquals("dataFlow"u8))
                         {
-                            dataFlow = DataFlowReference.DeserializeDataFlowReference(property0.Value);
+                            dataFlow = DataFlowReference.DeserializeDataFlowReference(property0.Value, options);
                             continue;
                         }
                         if (property0.NameEquals("staging"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            staging = DataFlowStagingInfo.DeserializeDataFlowStagingInfo(property0.Value);
+                            staging = DataFlowStagingInfo.DeserializeDataFlowStagingInfo(property0.Value, options);
                             continue;
                         }
                         if (property0.NameEquals("integrationRuntime"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            integrationRuntime = IntegrationRuntimeReference.DeserializeIntegrationRuntimeReference(property0.Value);
+                            integrationRuntime = IntegrationRuntimeReference.DeserializeIntegrationRuntimeReference(property0.Value, options);
+                            continue;
+                        }
+                        if (property0.NameEquals("continuationSettings"u8))
+                        {
+                            if (property0.Value.ValueKind == JsonValueKind.Null)
+                            {
+                                continue;
+                            }
+                            continuationSettings = ContinuationSettingsReference.DeserializeContinuationSettingsReference(property0.Value, options);
                             continue;
                         }
                         if (property0.NameEquals("compute"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            compute = ExecuteDataFlowActivityTypePropertiesCompute.DeserializeExecuteDataFlowActivityTypePropertiesCompute(property0.Value);
+                            compute = ExecuteDataFlowActivityComputeType.DeserializeExecuteDataFlowActivityComputeType(property0.Value, options);
                             continue;
                         }
                         if (property0.NameEquals("traceLevel"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            traceLevel = BinaryData.FromString(property0.Value.GetRawText());
+                            traceLevel = JsonSerializer.Deserialize<DataFactoryElement<string>>(property0.Value.GetRawText());
                             continue;
                         }
                         if (property0.NameEquals("continueOnError"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            continueOnError = BinaryData.FromString(property0.Value.GetRawText());
+                            continueOnError = JsonSerializer.Deserialize<DataFactoryElement<bool>>(property0.Value.GetRawText());
                             continue;
                         }
                         if (property0.NameEquals("runConcurrently"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            runConcurrently = BinaryData.FromString(property0.Value.GetRawText());
+                            runConcurrently = JsonSerializer.Deserialize<DataFactoryElement<bool>>(property0.Value.GetRawText());
                             continue;
                         }
                         if (property0.NameEquals("sourceStagingConcurrency"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            sourceStagingConcurrency = BinaryData.FromString(property0.Value.GetRawText());
+                            sourceStagingConcurrency = JsonSerializer.Deserialize<DataFactoryElement<int>>(property0.Value.GetRawText());
                             continue;
                         }
                         if (property0.NameEquals("sinks"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             Dictionary<string, PowerQuerySink> dictionary = new Dictionary<string, PowerQuerySink>();
                             foreach (var property1 in property0.Value.EnumerateObject())
                             {
-                                dictionary.Add(property1.Name, PowerQuerySink.DeserializePowerQuerySink(property1.Value));
+                                dictionary.Add(property1.Name, PowerQuerySink.DeserializePowerQuerySink(property1.Value, options));
                             }
                             sinks = dictionary;
                             continue;
@@ -324,13 +338,12 @@ namespace Azure.ResourceManager.DataFactory.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             List<PowerQuerySinkMapping> array = new List<PowerQuerySinkMapping>();
                             foreach (var item in property0.Value.EnumerateArray())
                             {
-                                array.Add(PowerQuerySinkMapping.DeserializePowerQuerySinkMapping(item));
+                                array.Add(PowerQuerySinkMapping.DeserializePowerQuerySinkMapping(item, options));
                             }
                             queries = array;
                             continue;
@@ -341,7 +354,58 @@ namespace Azure.ResourceManager.DataFactory.Models
                 additionalPropertiesDictionary.Add(property.Name, BinaryData.FromString(property.Value.GetRawText()));
             }
             additionalProperties = additionalPropertiesDictionary;
-            return new ExecuteWranglingDataflowActivity(name, type, description.Value, Optional.ToList(dependsOn), Optional.ToList(userProperties), additionalProperties, policy.Value, dataFlow, staging.Value, integrationRuntime.Value, compute.Value, traceLevel.Value, continueOnError.Value, runConcurrently.Value, sourceStagingConcurrency.Value, Optional.ToDictionary(sinks), Optional.ToList(queries));
+            return new ExecuteWranglingDataflowActivity(
+                name,
+                type,
+                description,
+                state,
+                onInactiveMarkAs,
+                dependsOn ?? new ChangeTrackingList<PipelineActivityDependency>(),
+                userProperties ?? new ChangeTrackingList<PipelineActivityUserProperty>(),
+                additionalProperties,
+                policy,
+                dataFlow,
+                staging,
+                integrationRuntime,
+                continuationSettings,
+                compute,
+                traceLevel,
+                continueOnError,
+                runConcurrently,
+                sourceStagingConcurrency,
+                sinks ?? new ChangeTrackingDictionary<string, PowerQuerySink>(),
+                queries ?? new ChangeTrackingList<PowerQuerySinkMapping>());
         }
+
+        BinaryData IPersistableModel<ExecuteWranglingDataflowActivity>.Write(ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ExecuteWranglingDataflowActivity>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    return ModelReaderWriter.Write(this, options);
+                default:
+                    throw new FormatException($"The model {nameof(ExecuteWranglingDataflowActivity)} does not support writing '{options.Format}' format.");
+            }
+        }
+
+        ExecuteWranglingDataflowActivity IPersistableModel<ExecuteWranglingDataflowActivity>.Create(BinaryData data, ModelReaderWriterOptions options)
+        {
+            var format = options.Format == "W" ? ((IPersistableModel<ExecuteWranglingDataflowActivity>)this).GetFormatFromOptions(options) : options.Format;
+
+            switch (format)
+            {
+                case "J":
+                    {
+                        using JsonDocument document = JsonDocument.Parse(data);
+                        return DeserializeExecuteWranglingDataflowActivity(document.RootElement, options);
+                    }
+                default:
+                    throw new FormatException($"The model {nameof(ExecuteWranglingDataflowActivity)} does not support reading '{options.Format}' format.");
+            }
+        }
+
+        string IPersistableModel<ExecuteWranglingDataflowActivity>.GetFormatFromOptions(ModelReaderWriterOptions options) => "J";
     }
 }

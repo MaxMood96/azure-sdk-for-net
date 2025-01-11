@@ -20,11 +20,6 @@ namespace Azure.AI.TextAnalytics.Models
                 writer.WritePropertyName("displayName"u8);
                 writer.WriteStringValue(DisplayName);
             }
-            if (Optional.IsDefined(DefaultLanguage))
-            {
-                writer.WritePropertyName("defaultLanguage"u8);
-                writer.WriteStringValue(DefaultLanguage);
-            }
             writer.WritePropertyName("analysisInput"u8);
             writer.WriteObjectValue(AnalysisInput);
             writer.WritePropertyName("tasks"u8);
@@ -35,6 +30,14 @@ namespace Azure.AI.TextAnalytics.Models
             }
             writer.WriteEndArray();
             writer.WriteEndObject();
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

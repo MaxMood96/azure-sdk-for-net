@@ -9,7 +9,7 @@ This package contains a C# SDK for Azure Communication Call Automation.
 Install the Azure Communication CallAutomation client library for .NET with [NuGet][nuget]:
 
 ```dotnetcli
-dotnet add package Azure.Communication.CallAutomation --prerelease
+dotnet add package Azure.Communication.CallAutomation
 ```
 
 ### Prerequisites
@@ -114,7 +114,7 @@ public IActionResult OnMidConnectionCallBackEvent([FromBody] CloudEvent[] events
 
 ### Handle Mid-Connection events with CallAutomation's EventProcessor
 To easily handle mid-connection events, Call Automation's SDK provides easier way to handle these events.
-Take a look at `CallAutomationEventProcessor`. this will ensure corelation between call and events more easily.
+Take a look at `CallAutomationEventProcessor`. this will ensure correlation between call and events more easily.
 ```C#
 [HttpPost]
 [Route("/CallBackEvent")]
@@ -195,11 +195,11 @@ This project has adopted the [Microsoft Open Source Code of Conduct][coc]. For m
 [coc]: https://opensource.microsoft.com/codeofconduct/
 [coc_faq]: https://opensource.microsoft.com/codeofconduct/faq/
 [coc_contact]: mailto:opencode@microsoft.com
-[communication_resource_docs]: https://docs.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-azp
-[communication_resource_create_portal]:  https://docs.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-azp
-[communication_resource_create_power_shell]: https://docs.microsoft.com/powershell/module/az.communication/new-azcommunicationservice
-[communication_resource_create_net]: https://docs.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-net
-[product_docs]: https://docs.microsoft.com/azure/communication-services/overview
+[communication_resource_docs]: https://learn.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-azp
+[communication_resource_create_portal]:  https://learn.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-azp
+[communication_resource_create_power_shell]: https://learn.microsoft.com/powershell/module/az.communication/new-azcommunicationservice
+[communication_resource_create_net]: https://learn.microsoft.com/azure/communication-services/quickstarts/create-communication-resource?tabs=windows&pivots=platform-net
+[product_docs]: https://learn.microsoft.com/azure/communication-services/overview
 [nuget]: https://www.nuget.org/
 [source]: https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/communication/Azure.Communication.CallAutomation/src
 [overview]: https://learn.microsoft.com/azure/communication-services/concepts/voice-video-calling/call-automation

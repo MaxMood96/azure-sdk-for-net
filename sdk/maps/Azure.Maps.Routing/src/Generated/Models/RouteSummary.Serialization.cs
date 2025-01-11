@@ -7,7 +7,7 @@
 
 using System;
 using System.Text.Json;
-using Azure.Core;
+using Azure.Maps.Common;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -19,18 +19,17 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<int> lengthInMeters = default;
-            Optional<int> travelTimeInSeconds = default;
-            Optional<int> trafficDelayInSeconds = default;
-            Optional<DateTimeOffset> departureTime = default;
-            Optional<DateTimeOffset> arrivalTime = default;
+            int? lengthInMeters = default;
+            int? travelTimeInSeconds = default;
+            int? trafficDelayInSeconds = default;
+            DateTimeOffset? departureTime = default;
+            DateTimeOffset? arrivalTime = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("lengthInMeters"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lengthInMeters = property.Value.GetInt32();
@@ -40,7 +39,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     travelTimeInSeconds = property.Value.GetInt32();
@@ -50,7 +48,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     trafficDelayInSeconds = property.Value.GetInt32();
@@ -60,7 +57,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     departureTime = property.Value.GetDateTimeOffset("O");
@@ -70,14 +66,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     arrivalTime = property.Value.GetDateTimeOffset("O");
                     continue;
                 }
             }
-            return new RouteSummary(Optional.ToNullable(lengthInMeters), Optional.ToNullable(travelTimeInSeconds), Optional.ToNullable(trafficDelayInSeconds), Optional.ToNullable(departureTime), Optional.ToNullable(arrivalTime));
+            return new RouteSummary(lengthInMeters, travelTimeInSeconds, trafficDelayInSeconds, departureTime, arrivalTime);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RouteSummary FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRouteSummary(document.RootElement);
         }
     }
 }

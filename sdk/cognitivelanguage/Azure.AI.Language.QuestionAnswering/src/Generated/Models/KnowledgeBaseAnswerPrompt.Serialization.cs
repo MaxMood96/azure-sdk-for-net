@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.Language.QuestionAnswering
 {
@@ -18,16 +17,15 @@ namespace Azure.AI.Language.QuestionAnswering
             {
                 return null;
             }
-            Optional<int> displayOrder = default;
-            Optional<int> qnaId = default;
-            Optional<string> displayText = default;
+            int? displayOrder = default;
+            int? qnaId = default;
+            string displayText = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("displayOrder"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     displayOrder = property.Value.GetInt32();
@@ -37,7 +35,6 @@ namespace Azure.AI.Language.QuestionAnswering
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     qnaId = property.Value.GetInt32();
@@ -49,7 +46,15 @@ namespace Azure.AI.Language.QuestionAnswering
                     continue;
                 }
             }
-            return new KnowledgeBaseAnswerPrompt(Optional.ToNullable(displayOrder), Optional.ToNullable(qnaId), displayText.Value);
+            return new KnowledgeBaseAnswerPrompt(displayOrder, qnaId, displayText);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static KnowledgeBaseAnswerPrompt FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeKnowledgeBaseAnswerPrompt(document.RootElement);
         }
     }
 }

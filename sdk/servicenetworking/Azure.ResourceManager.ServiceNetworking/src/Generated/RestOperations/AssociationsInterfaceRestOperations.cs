@@ -9,7 +9,6 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.ResourceManager.ServiceNetworking.Models;
@@ -33,8 +32,23 @@ namespace Azure.ResourceManager.ServiceNetworking
         {
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
             _endpoint = endpoint ?? new Uri("https://management.azure.com");
-            _apiVersion = apiVersion ?? "2022-10-01-preview";
+            _apiVersion = apiVersion ?? "2023-11-01";
             _userAgent = new TelemetryDetails(GetType().Assembly, applicationId);
+        }
+
+        internal RequestUriBuilder CreateListByTrafficControllerRequestUri(string subscriptionId, string resourceGroupName, string trafficControllerName)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/resourceGroups/", false);
+            uri.AppendPath(resourceGroupName, true);
+            uri.AppendPath("/providers/Microsoft.ServiceNetworking/trafficControllers/", false);
+            uri.AppendPath(trafficControllerName, true);
+            uri.AppendPath("/associations", false);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            return uri;
         }
 
         internal HttpMessage CreateListByTrafficControllerRequest(string subscriptionId, string resourceGroupName, string trafficControllerName)
@@ -116,6 +130,22 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
+        internal RequestUriBuilder CreateGetRequestUri(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/resourceGroups/", false);
+            uri.AppendPath(resourceGroupName, true);
+            uri.AppendPath("/providers/Microsoft.ServiceNetworking/trafficControllers/", false);
+            uri.AppendPath(trafficControllerName, true);
+            uri.AppendPath("/associations/", false);
+            uri.AppendPath(associationName, true);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            return uri;
+        }
+
         internal HttpMessage CreateGetRequest(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName)
         {
             var message = _pipeline.CreateMessage();
@@ -138,7 +168,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             return message;
         }
 
-        /// <summary> Get a Traffic Controller Association. </summary>
+        /// <summary> Get a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -171,7 +201,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
-        /// <summary> Get a Traffic Controller Association. </summary>
+        /// <summary> Get a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -204,6 +234,22 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
+        internal RequestUriBuilder CreateCreateOrUpdateRequestUri(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName, AssociationData data)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/resourceGroups/", false);
+            uri.AppendPath(resourceGroupName, true);
+            uri.AppendPath("/providers/Microsoft.ServiceNetworking/trafficControllers/", false);
+            uri.AppendPath(trafficControllerName, true);
+            uri.AppendPath("/associations/", false);
+            uri.AppendPath(associationName, true);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            return uri;
+        }
+
         internal HttpMessage CreateCreateOrUpdateRequest(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName, AssociationData data)
         {
             var message = _pipeline.CreateMessage();
@@ -224,13 +270,13 @@ namespace Azure.ResourceManager.ServiceNetworking
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             var content = new Utf8JsonRequestContent();
-            content.JsonWriter.WriteObjectValue(data);
+            content.JsonWriter.WriteObjectValue(data, ModelSerializationExtensions.WireOptions);
             request.Content = content;
             _userAgent.Apply(message);
             return message;
         }
 
-        /// <summary> Create a Traffic Controller Association. </summary>
+        /// <summary> Create a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -259,7 +305,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
-        /// <summary> Create a Traffic Controller Association. </summary>
+        /// <summary> Create a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -288,6 +334,22 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
+        internal RequestUriBuilder CreateUpdateRequestUri(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName, AssociationPatch patch)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/resourceGroups/", false);
+            uri.AppendPath(resourceGroupName, true);
+            uri.AppendPath("/providers/Microsoft.ServiceNetworking/trafficControllers/", false);
+            uri.AppendPath(trafficControllerName, true);
+            uri.AppendPath("/associations/", false);
+            uri.AppendPath(associationName, true);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            return uri;
+        }
+
         internal HttpMessage CreateUpdateRequest(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName, AssociationPatch patch)
         {
             var message = _pipeline.CreateMessage();
@@ -308,13 +370,13 @@ namespace Azure.ResourceManager.ServiceNetworking
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             var content = new Utf8JsonRequestContent();
-            content.JsonWriter.WriteObjectValue(patch);
+            content.JsonWriter.WriteObjectValue(patch, ModelSerializationExtensions.WireOptions);
             request.Content = content;
             _userAgent.Apply(message);
             return message;
         }
 
-        /// <summary> Update a Traffic Controller Association. </summary>
+        /// <summary> Update a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -347,7 +409,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
-        /// <summary> Update a Traffic Controller Association. </summary>
+        /// <summary> Update a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -380,6 +442,22 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
+        internal RequestUriBuilder CreateDeleteRequestUri(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/resourceGroups/", false);
+            uri.AppendPath(resourceGroupName, true);
+            uri.AppendPath("/providers/Microsoft.ServiceNetworking/trafficControllers/", false);
+            uri.AppendPath(trafficControllerName, true);
+            uri.AppendPath("/associations/", false);
+            uri.AppendPath(associationName, true);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            return uri;
+        }
+
         internal HttpMessage CreateDeleteRequest(string subscriptionId, string resourceGroupName, string trafficControllerName, string associationName)
         {
             var message = _pipeline.CreateMessage();
@@ -402,7 +480,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             return message;
         }
 
-        /// <summary> Delete a Traffic Controller Association. </summary>
+        /// <summary> Delete a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -430,7 +508,7 @@ namespace Azure.ResourceManager.ServiceNetworking
             }
         }
 
-        /// <summary> Delete a Traffic Controller Association. </summary>
+        /// <summary> Delete a Association. </summary>
         /// <param name="subscriptionId"> The ID of the target subscription. </param>
         /// <param name="resourceGroupName"> The name of the resource group. The name is case insensitive. </param>
         /// <param name="trafficControllerName"> traffic controller name for path. </param>
@@ -456,6 +534,14 @@ namespace Azure.ResourceManager.ServiceNetworking
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListByTrafficControllerNextPageRequestUri(string nextLink, string subscriptionId, string resourceGroupName, string trafficControllerName)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendRawNextLink(nextLink, false);
+            return uri;
         }
 
         internal HttpMessage CreateListByTrafficControllerNextPageRequest(string nextLink, string subscriptionId, string resourceGroupName, string trafficControllerName)

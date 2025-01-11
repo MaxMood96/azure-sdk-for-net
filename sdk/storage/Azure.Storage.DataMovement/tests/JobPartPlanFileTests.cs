@@ -4,8 +4,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Azure.Core.TestFramework;
-using Azure.Storage.DataMovement.Models.JobPlan;
+using Azure.Storage.DataMovement.JobPlan;
+using static Azure.Storage.DataMovement.Tests.TransferUtility;
 
 namespace Azure.Storage.DataMovement.Tests
 {
@@ -18,7 +18,7 @@ namespace Azure.Storage.DataMovement.Tests
         [Test]
         public async Task CreateJobPartPlanFileAsync_Base()
         {
-            using DisposingLocalDirectory test = GetTestLocalDirectory();
+            using DisposingLocalDirectory test = DisposingLocalDirectory.GetTestDirectory();
             await CreateRandomFileAsync(test.DirectoryPath);
             int jobPart = 5;
             string transferId = GetNewTransferId();
@@ -31,7 +31,20 @@ namespace Azure.Storage.DataMovement.Tests
                     checkpointerPath: test.DirectoryPath,
                     id: transferId,
                     jobPart: jobPart,
-                    headerStream: stream);
+                    header: new(
+                        DataMovementConstants.JobPartPlanFile.SchemaVersion,
+                        transferId,
+                        jobPart,
+                        System.DateTimeOffset.Now,
+                        "mock",
+                        "mock",
+                        "mock",
+                        "mock",
+                        default,
+                        default,
+                        default,
+                        default,
+                        new()));
             }
 
             JobPartPlanFileName fileName = new JobPartPlanFileName(
@@ -48,7 +61,7 @@ namespace Azure.Storage.DataMovement.Tests
         [Test]
         public async Task CreateJobPartPlanFileAsync_FileName()
         {
-            using DisposingLocalDirectory test = GetTestLocalDirectory();
+            using DisposingLocalDirectory test = DisposingLocalDirectory.GetTestDirectory();
             await CreateRandomFileAsync(test.DirectoryPath);
             int jobPart = 5;
             string transferId = GetNewTransferId();
@@ -63,7 +76,20 @@ namespace Azure.Storage.DataMovement.Tests
             {
                 file = await JobPartPlanFile.CreateJobPartPlanFileAsync(
                    fileName: fileName,
-                   headerStream: stream);
+                   header: new(
+                        DataMovementConstants.JobPartPlanFile.SchemaVersion,
+                        transferId,
+                        jobPart,
+                        System.DateTimeOffset.Now,
+                        "mock",
+                        "mock",
+                        "mock",
+                        "mock",
+                        default,
+                        default,
+                        default,
+                        default,
+                        new()));
             }
 
             Assert.NotNull(file);

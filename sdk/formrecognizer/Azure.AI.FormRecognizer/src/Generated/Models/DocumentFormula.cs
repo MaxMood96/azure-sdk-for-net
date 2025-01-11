@@ -7,14 +7,13 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.DocumentAnalysis
 {
     /// <summary> A formula object. </summary>
-    internal partial class DocumentFormula
+    public partial class DocumentFormula
     {
-        /// <summary> Initializes a new instance of DocumentFormula. </summary>
+        /// <summary> Initializes a new instance of <see cref="DocumentFormula"/>. </summary>
         /// <param name="kind"> Formula kind. </param>
         /// <param name="value"> LaTex expression describing the formula. </param>
         /// <param name="span"> Location of the formula in the reading order concatenated content. </param>
@@ -31,7 +30,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
             Confidence = confidence;
         }
 
-        /// <summary> Initializes a new instance of DocumentFormula. </summary>
+        /// <summary> Initializes a new instance of <see cref="DocumentFormula"/>. </summary>
         /// <param name="kind"> Formula kind. </param>
         /// <param name="value"> LaTex expression describing the formula. </param>
         /// <param name="polygon"> Bounding polygon of the formula. </param>
@@ -50,8 +49,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
         public DocumentFormulaKind Kind { get; }
         /// <summary> LaTex expression describing the formula. </summary>
         public string Value { get; }
-        /// <summary> Bounding polygon of the formula. </summary>
-        public IReadOnlyList<float> Polygon { get; }
         /// <summary> Location of the formula in the reading order concatenated content. </summary>
         public DocumentSpan Span { get; }
         /// <summary> Confidence of correctly extracting the formula. </summary>

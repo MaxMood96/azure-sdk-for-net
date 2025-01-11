@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
+using Azure.MixedReality.Common;
 
 namespace Azure.MixedReality.ObjectAnchors.Conversion.Models
 {
@@ -21,9 +21,9 @@ namespace Azure.MixedReality.ObjectAnchors.Conversion.Models
             }
             string code = default;
             string message = default;
-            Optional<string> target = default;
-            Optional<IReadOnlyList<ErrorDetail>> details = default;
-            Optional<InnerError> innererror = default;
+            string target = default;
+            IReadOnlyList<ErrorDetail> details = default;
+            InnerError innererror = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("code"u8))
@@ -45,7 +45,6 @@ namespace Azure.MixedReality.ObjectAnchors.Conversion.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ErrorDetail> array = new List<ErrorDetail>();
@@ -60,14 +59,21 @@ namespace Azure.MixedReality.ObjectAnchors.Conversion.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     innererror = InnerError.DeserializeInnerError(property.Value);
                     continue;
                 }
             }
-            return new ErrorDetail(code, message, target.Value, Optional.ToList(details), innererror.Value);
+            return new ErrorDetail(code, message, target, details ?? new ChangeTrackingList<ErrorDetail>(), innererror);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ErrorDetail FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeErrorDetail(document.RootElement);
         }
     }
 }

@@ -2,41 +2,29 @@
 // Licensed under the MIT License.
 
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.DataMovement.Models;
 
 namespace Azure.Storage.DataMovement.Blobs
 {
     /// <summary>
-    /// Options bag for <see cref="BlobDirectoryStorageResourceContainer"/> and
-    /// <see cref="BlobStorageResourceContainer"/>.
+    /// Options parameters when using a <see cref="BlobStorageResourceContainer"/>.
     /// </summary>
     public class BlobStorageResourceContainerOptions
     {
         /// <summary>
-        /// Optional. The <see cref="BlobTraits"/> for when calling the
-        /// <see cref="BlobDirectoryStorageResourceContainer.GetStorageResourcesAsync(System.Threading.CancellationToken)"/>.
-        /// </summary>
-        public BlobTraits Traits { get; set; }
-
-        /// <summary>
-        /// Optional. The <see cref="BlobStates"/> for when calling the
-        /// <see cref="BlobDirectoryStorageResourceContainer.GetStorageResourcesAsync(System.Threading.CancellationToken)"/>.
-        /// </summary>
-        public BlobStates States { get; set; }
-
-        /// <summary>
-        /// Optional. Defines the copy operation to take.
-        /// See <see cref="TransferCopyMethod"/>. Defaults to <see cref="TransferCopyMethod.SyncCopy"/>.
+        /// Optional. The <see cref="Storage.Blobs.Models.BlobType"/> that will be used when uploading blobs to the destination.
         ///
-        /// Only applies when calling <see cref="BlockBlobStorageResource.CopyBlockFromUriAsync(StorageResource, HttpRange, bool, long, StorageResourceCopyFromUriOptions, System.Threading.CancellationToken)"/>.
+        /// Defaults to preserving the blob type if the source is also a blob. If the source is not a blob, will default to Block Blob.
         /// </summary>
-        public TransferCopyMethod CopyMethod { get; set; }
+        public DataTransferProperty<BlobType?> BlobType { get; set; }
 
         /// <summary>
-        /// The <see cref="BlobType"/> that will be used when uploading blobs to the destination.
-        ///
-        /// Defaults to <see cref="BlobType.Block"/>.
+        /// Optional. The directory prefix within the Blob Storage Container to use in the transfer.
         /// </summary>
-        public BlobType BlobType { get; set; } = BlobType.Block;
+        public string BlobDirectoryPrefix { get; set; }
+
+        /// <summary>
+        /// Optional. Additional options applied to each resource in the container.
+        /// </summary>
+        public BlobStorageResourceOptions BlobOptions { get; set; }
     }
 }

@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
+using Azure.Maps.Common;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -19,9 +19,9 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<string> formatVersion = default;
-            Optional<IReadOnlyList<IList<RouteMatrix>>> matrix = default;
-            Optional<RouteMatrixSummary> summary = default;
+            string formatVersion = default;
+            IReadOnlyList<IList<RouteMatrix>> matrix = default;
+            RouteMatrixSummary summary = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("formatVersion"u8))
@@ -33,7 +33,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<IList<RouteMatrix>> array = new List<IList<RouteMatrix>>();
@@ -60,14 +59,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     summary = RouteMatrixSummary.DeserializeRouteMatrixSummary(property.Value);
                     continue;
                 }
             }
-            return new RouteMatrixResult(formatVersion.Value, Optional.ToList(matrix), summary.Value);
+            return new RouteMatrixResult(formatVersion, matrix ?? new ChangeTrackingList<IList<RouteMatrix>>(), summary);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RouteMatrixResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRouteMatrixResult(document.RootElement);
         }
     }
 }

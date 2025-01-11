@@ -220,7 +220,38 @@ In addition to the auto-rerecording functionality, using the RecordedTestAttribu
 
 ### Recording
 
-When tests are run in `Record` mode, session records are saved to the project directory automatically in a folder named 'SessionRecords'.
+Because of the quick growth of the repo size due to the presence of recordings, currently there is an ongoing effort to migrate them to the [Azure SDK Assets](https://github.com/Azure/azure-sdk-assets) repo. The location where session records are stored in your machine depends on whether migration already took place for your project or not.
+
+For projects whose recordings have not been migrated yet, when tests are run in `Record` mode, session records are saved to the project directory automatically in a folder named 'SessionRecords'. The recordings contained in this folder must be pushed normally.
+
+For projects whose recordings have already been migrated, when tests are run in `Record` mode, session records are saved in a local folder named '.assets', located at the root of this repo. This folder will be created automatically by the Test Framework and should not be committed with other changes. Instead, recordings must be pushed manually to the Azure SDK Assets repo with the help of the `test-proxy` command line tool.
+
+To differentiate between the two types of projects, you just need to look for an `assets.json` file at your package directory. The file is only present if migration has taken place.
+
+#### Installing the test-proxy tool
+
+This step is only relevant if your project had its recordings migrated to the Azure SDK Assets repo.
+
+In order to push new session records, you must have the `test-proxy` command line tool installed. It can be installed automatically when running the Test Framework in `Record` mode on Windows. You can check the installed version by invoking:
+```PowerShell
+test-proxy --version
+```
+
+If you need to install the `test-proxy` tool manually, check [Azure SDK Tools Test Proxy
+](https://github.com/Azure/azure-sdk-tools/blob/main/tools/test-proxy/Azure.Sdk.Tools.TestProxy/README.md#installation) for installation options.
+
+#### Pushing session records and updating assets.json
+
+This step is only relevant if your project had its recordings migrated to the Azure SDK Assets repo.
+
+The `assets.json` file located at your package directory is used by the Test Framework to figure out how to retrieve session records from the assets repo. In order to push new session records, you need to invoke:
+```PowerShell
+test-proxy push -a <path-to-assets.json>
+```
+
+On completion of the push, a newly created tag will be stamped into the `assets.json` file. This new tag must be committed and pushed to your package directory along with any other changes.
+
+**NOTE**: Permission is required for updating the assets repository. If you failed when executing `test-proxy push` command, please [join a partner write team](https://dev.azure.com/azure-sdk/internal/_wiki/wikis/internal.wiki/785/Externalizing-Recordings-(Asset-Sync)?anchor=permissions-to-%60azure/azure-sdk-assets%60). Please notice that this is "Microsoft Internal", community contributors will need to work with the pull request reviewers to merge the assets.
 
 ### Sanitizing
 
@@ -337,6 +368,8 @@ public KeyClientLiveTests(bool isAsync, KeyClientOptions.ServiceVersion serviceV
 }
 ```
 
+__Note:__ A user can set the environment variable PROXY_DEBUG_MODE to a truthy value prior to invoking, just like if they set `UseLocalDebugProxy` in their code.
+
 In order to debug the test proxy, you will need to clone the [azure-sdk-tools](https://github.com/Azure/azure-sdk-tools) repo. The best practice is to first create a fork of the repo, and then clone your fork locally.
 
 Once you have cloned the repo, open the [Test Proxy solution](https://github.com/Azure/azure-sdk-tools/blob/main/tools/test-proxy/Azure.Sdk.Tools.TestProxy.sln) in your IDE.
@@ -348,6 +381,11 @@ With your breakpoints set, run the Test Proxy project, and then run your test th
 The key integration points between the Test Framework and the Test Proxy are:
  - InstrumentClientOptions method of `RecordedTestBase` - calling this on your client options will set the [ClientOptions.Transport property](https://learn.microsoft.com/dotnet/api/azure.core.clientoptions.transport?view=azure-dotnet) to be [ProxyTransport](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core.TestFramework/src/ProxyTransport.cs) to your client options when in `Playback` or `Record` mode. The ProxyTransport will send all requests to the Test Proxy.
  - [TestProxy.cs](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core.TestFramework/src/TestProxy.cs) - This class is responsible for starting and stopping the Test Proxy process, as well as reporting any errors that occur in the Test Proxy process. The Test Proxy process is started automatically when running tests in `Record` or `Playback` mode, and is stopped automatically when the test run is complete. The Test Proxy process is shared between tests and test classes within a process.
+
+#### Including Test Proxy Debug Logs
+
+In order to enable Test Proxy debug logs, you can either set the `AZURE_ENABLE_TEST_PROXY_DEBUG_LOGS`
+environment variable or the `EnableTestProxyDebugLogs` [runsetting](https://github.com/Azure/azure-sdk-for-net/blob/main/eng/nunit.runsettings) parameter to `true`.
 
 ## Unit tests
 
@@ -543,7 +581,7 @@ To download and unpack all artifacts use the `Download-DevOpsRecordings.ps1` scr
 
 The `Download-DevOpsRecordings.ps1` would wait for active runs to finish before retrieving artifacts unless `-NoWait` switch is used.
 
-__NOTE:__ these scripts require being [signed in with Azure CLI](https://docs.microsoft.com/cli/azure/authenticate-azure-cli?view=azure-cli-latest) and access to the [internal DevOps project](https://dev.azure.com/azure-sdk/internal/).
+__NOTE:__ these scripts require being [signed in with Azure CLI](https://learn.microsoft.com/cli/azure/authenticate-azure-cli?view=azure-cli-latest) and access to the [internal DevOps project](https://dev.azure.com/azure-sdk/internal/).
 
 ### Note on private/non-virtual fields in your clients (such as _clientDiagnostics) and InternalsVisibleTo
 
@@ -609,7 +647,7 @@ using (var _ = new TestEnvVar("AZURE_TENANT_ID", "foo"))
 
 ### TestAppContextSwitch
 
-[TestAppContextSwitch](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core.TestFramework/src/TestAppContextSwitch.cs) allows you to wrap a block of code with a using statement inside which the configured [AppContext](https://docs.microsoft.com/dotnet/api/system.appcontext) switch will be set to your supplied values.
+[TestAppContextSwitch](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core.TestFramework/src/TestAppContextSwitch.cs) allows you to wrap a block of code with a using statement inside which the configured [AppContext](https://learn.microsoft.com/dotnet/api/system.appcontext) switch will be set to your supplied values.
 It ensures that the existing value of any configured switches are preserved before they are set them and restores them outside the scope of the using block.
 Note: Even if an `AppContext` switch was un-set prior to setting it via `TestAppContextSwitch`, it will be unset after leaving the scope of the using block.
 

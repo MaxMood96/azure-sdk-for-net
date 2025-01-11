@@ -5,16 +5,18 @@ Run `dotnet build /t:GenerateCode` to generate code.
 ``` yaml
 
 azure-arm: true
-generate-model-factory: false
 csharp: true
 library-name: SignalR
 namespace: Azure.ResourceManager.SignalR
 require: https://github.com/Azure/azure-rest-api-specs/blob/34ba022add0034e30462b76e1548ce5a7e053e33/specification/signalr/resource-manager/readme.md
+#tag: package-2022-02-01
 output-folder: $(this-folder)/Generated
 clear-output-folder: true
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
+use-model-reader-writer: true
+enable-bicep-serialization: true
 
 rename-mapping:
   SignalRResource: SignalR
@@ -69,7 +71,7 @@ format-by-name-rules:
 override-operation-name:
   SignalR_CheckNameAvailability: CheckSignalRNameAvailability
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS

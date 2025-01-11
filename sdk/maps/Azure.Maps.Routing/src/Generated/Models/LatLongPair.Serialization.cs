@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -18,15 +17,14 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<double> latitude = default;
-            Optional<double> longitude = default;
+            double? latitude = default;
+            double? longitude = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("latitude"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     latitude = property.Value.GetDouble();
@@ -36,14 +34,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     longitude = property.Value.GetDouble();
                     continue;
                 }
             }
-            return new LatLongPair(Optional.ToNullable(latitude), Optional.ToNullable(longitude));
+            return new LatLongPair(latitude, longitude);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static LatLongPair FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeLatLongPair(document.RootElement);
         }
     }
 }

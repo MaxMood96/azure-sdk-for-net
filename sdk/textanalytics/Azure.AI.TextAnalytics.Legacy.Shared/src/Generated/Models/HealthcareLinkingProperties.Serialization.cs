@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.TextAnalytics.Legacy
 {
@@ -19,16 +18,15 @@ namespace Azure.AI.TextAnalytics.Legacy
             {
                 return null;
             }
-            Optional<HealthcareAssertion> assertion = default;
-            Optional<string> name = default;
-            Optional<IReadOnlyList<HealthcareEntityLink>> links = default;
+            HealthcareAssertion assertion = default;
+            string name = default;
+            IReadOnlyList<HealthcareEntityLink> links = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("assertion"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     assertion = HealthcareAssertion.DeserializeHealthcareAssertion(property.Value);
@@ -43,7 +41,6 @@ namespace Azure.AI.TextAnalytics.Legacy
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<HealthcareEntityLink> array = new List<HealthcareEntityLink>();
@@ -55,7 +52,15 @@ namespace Azure.AI.TextAnalytics.Legacy
                     continue;
                 }
             }
-            return new HealthcareLinkingProperties(assertion.Value, name.Value, Optional.ToList(links));
+            return new HealthcareLinkingProperties(assertion, name, links ?? new ChangeTrackingList<HealthcareEntityLink>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static HealthcareLinkingProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeHealthcareLinkingProperties(document.RootElement);
         }
     }
 }

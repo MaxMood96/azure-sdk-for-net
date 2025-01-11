@@ -8,8 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Communication;
-using Azure.Core;
 
 namespace Azure.Communication.Chat
 {
@@ -25,13 +23,13 @@ namespace Azure.Communication.Chat
             ChatMessageType type = default;
             string sequenceId = default;
             string version = default;
-            Optional<ChatMessageContentInternal> content = default;
-            Optional<string> senderDisplayName = default;
+            ChatMessageContentInternal content = default;
+            string senderDisplayName = default;
             DateTimeOffset createdOn = default;
-            Optional<CommunicationIdentifierModel> senderCommunicationIdentifier = default;
-            Optional<DateTimeOffset> deletedOn = default;
-            Optional<DateTimeOffset> editedOn = default;
-            Optional<IReadOnlyDictionary<string, string>> metadata = default;
+            CommunicationIdentifierModel senderCommunicationIdentifier = default;
+            DateTimeOffset? deletedOn = default;
+            DateTimeOffset? editedOn = default;
+            IReadOnlyDictionary<string, string> metadata = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("id"u8))
@@ -58,7 +56,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     content = ChatMessageContentInternal.DeserializeChatMessageContentInternal(property.Value);
@@ -78,7 +75,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     senderCommunicationIdentifier = CommunicationIdentifierModel.DeserializeCommunicationIdentifierModel(property.Value);
@@ -88,7 +84,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     deletedOn = property.Value.GetDateTimeOffset("O");
@@ -98,7 +93,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     editedOn = property.Value.GetDateTimeOffset("O");
@@ -108,7 +102,6 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -120,7 +113,26 @@ namespace Azure.Communication.Chat
                     continue;
                 }
             }
-            return new ChatMessageInternal(id, type, sequenceId, version, content.Value, senderDisplayName.Value, createdOn, senderCommunicationIdentifier.Value, Optional.ToNullable(deletedOn), Optional.ToNullable(editedOn), Optional.ToDictionary(metadata));
+            return new ChatMessageInternal(
+                id,
+                type,
+                sequenceId,
+                version,
+                content,
+                senderDisplayName,
+                createdOn,
+                senderCommunicationIdentifier,
+                deletedOn,
+                editedOn,
+                metadata ?? new ChangeTrackingDictionary<string, string>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ChatMessageInternal FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeChatMessageInternal(document.RootElement);
         }
     }
 }

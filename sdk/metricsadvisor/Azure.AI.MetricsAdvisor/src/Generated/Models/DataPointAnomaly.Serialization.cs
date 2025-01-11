@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.MetricsAdvisor.Models
 {
@@ -20,12 +19,12 @@ namespace Azure.AI.MetricsAdvisor.Models
             {
                 return null;
             }
-            Optional<string> dataFeedId = default;
-            Optional<string> metricId = default;
-            Optional<string> anomalyDetectionConfigurationId = default;
+            string dataFeedId = default;
+            string metricId = default;
+            string anomalyDetectionConfigurationId = default;
             DateTimeOffset timestamp = default;
-            Optional<DateTimeOffset> createdTime = default;
-            Optional<DateTimeOffset> modifiedTime = default;
+            DateTimeOffset? createdTime = default;
+            DateTimeOffset? modifiedTime = default;
             IReadOnlyDictionary<string, string> dimension = default;
             AnomalyProperty property = default;
             foreach (var property0 in element.EnumerateObject())
@@ -54,7 +53,6 @@ namespace Azure.AI.MetricsAdvisor.Models
                 {
                     if (property0.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property0.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     createdTime = property0.Value.GetDateTimeOffset("O");
@@ -64,7 +62,6 @@ namespace Azure.AI.MetricsAdvisor.Models
                 {
                     if (property0.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property0.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     modifiedTime = property0.Value.GetDateTimeOffset("O");
@@ -86,7 +83,23 @@ namespace Azure.AI.MetricsAdvisor.Models
                     continue;
                 }
             }
-            return new DataPointAnomaly(dataFeedId.Value, metricId.Value, anomalyDetectionConfigurationId.Value, timestamp, Optional.ToNullable(createdTime), Optional.ToNullable(modifiedTime), dimension, property);
+            return new DataPointAnomaly(
+                dataFeedId,
+                metricId,
+                anomalyDetectionConfigurationId,
+                timestamp,
+                createdTime,
+                modifiedTime,
+                dimension,
+                property);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DataPointAnomaly FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDataPointAnomaly(document.RootElement);
         }
     }
 }

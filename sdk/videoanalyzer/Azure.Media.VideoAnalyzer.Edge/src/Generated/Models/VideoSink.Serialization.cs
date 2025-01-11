@@ -53,8 +53,8 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 return null;
             }
             string videoName = default;
-            Optional<VideoCreationProperties> videoCreationProperties = default;
-            Optional<VideoPublishingOptions> videoPublishingOptions = default;
+            VideoCreationProperties videoCreationProperties = default;
+            VideoPublishingOptions videoPublishingOptions = default;
             string localMediaCachePath = default;
             string localMediaCacheMaximumSizeMiB = default;
             string type = default;
@@ -71,7 +71,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     videoCreationProperties = VideoCreationProperties.DeserializeVideoCreationProperties(property.Value);
@@ -81,7 +80,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     videoPublishingOptions = VideoPublishingOptions.DeserializeVideoPublishingOptions(property.Value);
@@ -118,7 +116,31 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                     continue;
                 }
             }
-            return new VideoSink(type, name, inputs, videoName, videoCreationProperties.Value, videoPublishingOptions.Value, localMediaCachePath, localMediaCacheMaximumSizeMiB);
+            return new VideoSink(
+                type,
+                name,
+                inputs,
+                videoName,
+                videoCreationProperties,
+                videoPublishingOptions,
+                localMediaCachePath,
+                localMediaCacheMaximumSizeMiB);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new VideoSink FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeVideoSink(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

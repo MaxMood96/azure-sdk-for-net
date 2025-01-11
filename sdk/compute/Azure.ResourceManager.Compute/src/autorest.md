@@ -8,15 +8,22 @@ Run `dotnet build /t:GenerateCode` to generate code.
 
 ``` yaml
 azure-arm: true
-generate-model-factory: false
 library-name: Compute
 namespace: Azure.ResourceManager.Compute
-require: https://github.com/Azure/azure-rest-api-specs/blob/03261080b3083a9e8cb0b61d840cc8291c596590/specification/compute/resource-manager/readme.md
+require: https://github.com/Azure/azure-rest-api-specs/blob/bf420af156ea90b4226e96582bdb4c9647491ae6/specification/compute/resource-manager/readme.md
+#tag: package-2024-03-03
 output-folder: $(this-folder)/Generated
 clear-output-folder: true
+sample-gen:
+  output-folder: $(this-folder)/../samples/Generated
+  clear-output-folder: true
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
+use-model-reader-writer: true
+
+#mgmt-debug:
+#  show-serialized-names: true
 
 update-required-copy:
   GalleryImage: OSType
@@ -33,7 +40,7 @@ keep-plural-enums:
 - IntervalInMins
 - VmGuestPatchClassificationForWindows # we have this because the generator will change windows to window which does not make sense
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS
@@ -65,6 +72,8 @@ rename-rules:
   ZRS: Zrs
   RestorePointCollection: RestorePointGroup # the word `collection` is reserved by the SDK, therefore we need to rename all the occurrences of this in all resources and models
   EncryptionSettingsCollection: EncryptionSettingsGroup # the word `collection` is reserved by the SDK, therefore we need to rename all the occurrences of this in all resources and models
+  VHD: Vhd
+  VHDX: Vhdx
 
 list-exception:
 - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/restorePointCollections/{restorePointGroupName}/restorePoints/{restorePointName} # compute RP did not provide an API for listing this resource
@@ -120,9 +129,6 @@ prepend-rp-prefix:
 - PublicIPAddressSkuTier
 - StatusLevelTypes
 
-#mgmt-debug:
-#    show-serialized-names: true
-
 rename-mapping:
   DiskSecurityTypes.ConfidentialVM_VMGuestStateOnlyEncryptedWithPlatformKey: ConfidentialVmGuestStateOnlyEncryptedWithPlatformKey
   SubResource: ComputeWriteableSubResourceData
@@ -159,6 +165,7 @@ rename-mapping:
   DiskRestorePoint.properties.sourceResourceLocation: -|azure-location
   Encryption: DiskEncryption
   Encryption.diskEncryptionSetId: -|arm-id
+  Encryption.type: EncryptionType
   CreationData: DiskCreationData
   CreationData.storageAccountId: -|arm-id
   CreationData.sourceResourceId: -|arm-id
@@ -255,9 +262,44 @@ rename-mapping:
   VirtualMachineScaleSetUpdateNetworkConfiguration.properties.disableTcpStateTracking: IsTcpStateTrackingDisabled
   AlternativeOption: ImageAlternativeOption
   AlternativeType: ImageAlternativeType
-  VirtualMachineScaleSet.properties.constrainedMaximumCapacity : IsMaximumCapacityConstrained
+  VirtualMachineScaleSetProperties.constrainedMaximumCapacity : IsMaximumCapacityConstrained
+  VirtualMachineScaleSetUpdateProperties: VirtualMachineScaleSetPatchProperties
   RollingUpgradePolicy.maxSurge : IsMaxSurgeEnabled
   ScheduledEventsProfile: ComputeScheduledEventsProfile
+  ExpandTypeForListVMs: GetVirtualMachineExpandType
+  ExpandTypesForListVm: GetVirtualMachineExpandType
+  RestorePointSourceVmStorageProfile.dataDisks: DataDiskList
+  SecurityPostureReference.id: -|arm-id
+  CommunityGalleryImage.properties.identifier: ImageIdentifier
+  GalleryTargetExtendedLocation.storageAccountType: GalleryStorageAccountType
+  FileFormat: DiskImageFileFormat
+  CreationData.elasticSanResourceId: -|arm-id
+  NetworkInterfaceAuxiliarySku: ComputeNetworkInterfaceAuxiliarySku
+  NetworkInterfaceAuxiliaryMode: ComputeNetworkInterfaceAuxiliaryMode
+  CommunityGalleryInfo.publisherUri: PublisherUriString
+  GalleryArtifactVersionFullSource.virtualMachineId: -|arm-id
+  SecurityPostureReference: ComputeSecurityPostureReference
+  SecurityPostureReference.excludeExtensions: ExcludeExtensionNames
+  SkuProfile : ComputeSkuProfile
+  SkuProfileVMSize : ComputeSkuProfileVMSize
+  AllocationStrategy : ComputeAllocationStrategy
+  GalleryImageVersion.properties.restore: IsRestoreEnabled
+  EndpointAccess: ComputeGalleryEndpointAccess
+  EndpointTypes: ComputeGalleryEndpointTypes
+  GallerySoftDeletedResource : GallerySoftDeletedResourceDetails
+  GallerySoftDeletedResource.properties.softDeletedTime: -|date-time
+  PlatformAttribute: ComputeGalleryPlatformAttribute
+  ValidationStatus: ComputeGalleryValidationStatus
+  AccessControlRules: GalleryInVmAccessControlRules
+  AccessControlRulesIdentity: GalleryInVmAccessControlRulesIdentity
+  AccessControlRulesMode: GalleryInVmAccessControlRulesMode
+  AccessControlRulesPrivilege: GalleryInVmAccessControlRulesPrivilege
+  AccessControlRulesRole: GalleryInVmAccessControlRulesRole
+  AccessControlRulesRoleAssignment: GalleryInVmAccessControlRulesRoleAssignment
+  ValidationsProfile: GalleryImageValidationsProfile
+  SoftDeletedArtifactTypes: GallerySoftDeletedArtifactType
+  GalleryImageVersionSafetyProfile.blockDeletionBeforeEndOfLife: IsBlockedDeletionBeforeEndOfLife
+  ExecutedValidation: GalleryImageExecutedValidation
 
 directive:
 # copy the systemData from common-types here so that it will be automatically replaced
@@ -356,4 +398,28 @@ directive:
   - from: swagger-document
     where: $.definitions.KeyVaultSecretReference
     transform: $["x-csharp-usage"] = "converter";
+  # TODO -- to be removed. This is a temporary workaround because the rename-mapping configuration is not working properly on arrays.
+  - from: restorePoint.json
+    where: $.definitions.RestorePointSourceVMStorageProfile.properties.dataDisks
+    transform: $["x-ms-client-name"] = "DataDiskList";
+  # Add a dummy property because generator tries to flatten automaticallyApprove in both UserInitiatedRedeploy and UserInitiatedReboot
+  - from: computeRPCommon.json
+    where: $.definitions.UserInitiatedRedeploy.properties
+    transform: >
+      $.dummyProperty = {
+        "type": "string",
+        "description": "This is a dummy property to prevent flattening."
+      };
+  # add additionalproperties to a few models to support private properties supported by the service
+  - from: virtualMachineScaleSet.json
+    where: $.definitions
+    transform: >
+      $.VirtualMachineScaleSetProperties.additionalProperties = true;
+      $.VirtualMachineScaleSet.properties.properties["x-ms-client-flatten"] = false;
+      $.VirtualMachineScaleSetUpdate.properties.properties["x-ms-client-flatten"] = false;
+      $.UpgradePolicy.additionalProperties = true;
+  - from: computeRPCommon.json
+    where: $.definitions.VMSizeProperties
+    transform: >
+      $.additionalProperties = true;
 ```

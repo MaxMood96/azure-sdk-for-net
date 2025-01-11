@@ -7,7 +7,6 @@
 
 using System.Text.Json;
 using Azure.Communication.Identity.Models;
-using Azure.Core;
 
 namespace Azure.Communication.Identity
 {
@@ -20,7 +19,7 @@ namespace Azure.Communication.Identity
                 return null;
             }
             CommunicationIdentity identity = default;
-            Optional<CommunicationIdentityAccessToken> accessToken = default;
+            CommunicationIdentityAccessToken accessToken = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("identity"u8))
@@ -32,14 +31,21 @@ namespace Azure.Communication.Identity
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     accessToken = CommunicationIdentityAccessToken.DeserializeCommunicationIdentityAccessToken(property.Value);
                     continue;
                 }
             }
-            return new CommunicationUserIdentifierAndToken(identity, accessToken.Value);
+            return new CommunicationUserIdentifierAndToken(identity, accessToken);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static CommunicationUserIdentifierAndToken FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeCommunicationUserIdentifierAndToken(document.RootElement);
         }
     }
 }

@@ -51,19 +51,18 @@ namespace Azure.AI.MetricsAdvisor.Models
             {
                 return null;
             }
-            Optional<double> lower = default;
-            Optional<double> upper = default;
+            double? lower = default;
+            double? upper = default;
             BoundaryDirection direction = default;
-            Optional<BoundaryMeasureType> type = default;
-            Optional<string> metricId = default;
-            Optional<bool> triggerForMissing = default;
+            BoundaryMeasureType? type = default;
+            string metricId = default;
+            bool? triggerForMissing = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("lower"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lower = property.Value.GetDouble();
@@ -73,7 +72,6 @@ namespace Azure.AI.MetricsAdvisor.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     upper = property.Value.GetDouble();
@@ -88,7 +86,6 @@ namespace Azure.AI.MetricsAdvisor.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     type = new BoundaryMeasureType(property.Value.GetString());
@@ -103,14 +100,35 @@ namespace Azure.AI.MetricsAdvisor.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     triggerForMissing = property.Value.GetBoolean();
                     continue;
                 }
             }
-            return new MetricBoundaryCondition(Optional.ToNullable(lower), Optional.ToNullable(upper), direction, Optional.ToNullable(type), metricId.Value, Optional.ToNullable(triggerForMissing));
+            return new MetricBoundaryCondition(
+                lower,
+                upper,
+                direction,
+                type,
+                metricId,
+                triggerForMissing);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static MetricBoundaryCondition FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeMetricBoundaryCondition(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
     /// These tests have a dependency on live Azure services and may incur costs for the associated
     /// Azure subscription.
     /// </remarks>
-    [ServiceVersion(Min = DocumentAnalysisClientOptions.ServiceVersion.V2023_02_28_Preview)]
+    [ServiceVersion(Min = DocumentAnalysisClientOptions.ServiceVersion.V2023_07_31)]
     internal class DocumentClassifierLiveTests : DocumentAnalysisLiveTestBase
     {
         /// <summary>
@@ -36,7 +36,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         {
             var client = CreateDocumentAnalysisClient(useTokenCredential);
             var classifierId = Recording.GenerateId();
-            await using var disposableClassifier = await BuildDisposableDocumentClassifier(classifierId);
+            await using var disposableClassifier = await BuildDisposableDocumentClassifierAsync(classifierId);
             using var stream = DocumentAnalysisTestEnvironment.CreateStream(TestFile.Irs1040);
             ClassifyDocumentOperation operation;
 
@@ -47,7 +47,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
 
             Assert.IsTrue(operation.HasValue);
 
-            ValidateIrs1040ClassifierResult(operation.Value);
+            ValidateIrs1040ClassifierResult(operation.Value, classifierId);
         }
 
         [RecordedTest]
@@ -55,7 +55,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         {
             var client = CreateDocumentAnalysisClient();
             var classifierId = Recording.GenerateId();
-            await using var disposableClassifier = await BuildDisposableDocumentClassifier(classifierId);
+            await using var disposableClassifier = await BuildDisposableDocumentClassifierAsync(classifierId);
             using var stream = DocumentAnalysisTestEnvironment.CreateStream(TestFile.Blank);
             ClassifyDocumentOperation operation;
 
@@ -66,29 +66,29 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
 
             Assert.IsTrue(operation.HasValue);
 
-            ValidateGenericClassifierResult(operation.Value);
+            ValidateGenericClassifierResult(operation.Value, classifierId);
         }
 
         [RecordedTest]
         [TestCase(true)]
         [TestCase(false)]
-        [Ignore("Test file IRS-1040_2.pdf hasn't been uploaded to GitHub yet.")]
         public async Task ClassifyDocumentFromUri(bool useTokenCredential)
         {
             var client = CreateDocumentAnalysisClient(useTokenCredential);
             var classifierId = Recording.GenerateId();
-            await using var disposableClassifier = await BuildDisposableDocumentClassifier(classifierId);
+            await using var disposableClassifier = await BuildDisposableDocumentClassifierAsync(classifierId);
             var uri = DocumentAnalysisTestEnvironment.CreateUri(TestFile.Irs1040);
             var operation = await client.ClassifyDocumentFromUriAsync(WaitUntil.Completed, classifierId, uri);
 
             Assert.IsTrue(operation.HasValue);
 
-            ValidateIrs1040ClassifierResult(operation.Value);
+            ValidateIrs1040ClassifierResult(operation.Value, classifierId);
         }
 
-        private void ValidateGenericClassifierResult(AnalyzeResult analyzeResult)
+        private void ValidateGenericClassifierResult(AnalyzeResult analyzeResult, string expectedClassifierId)
         {
-            Assert.IsNull(analyzeResult.ModelId);
+            Assert.AreEqual(expectedClassifierId, analyzeResult.ModelId);
+
             Assert.IsEmpty(analyzeResult.Content);
             Assert.IsEmpty(analyzeResult.Paragraphs);
             Assert.IsEmpty(analyzeResult.Tables);
@@ -103,14 +103,11 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
                 Assert.IsEmpty(page.Words);
                 Assert.IsEmpty(page.SelectionMarks);
                 Assert.IsEmpty(page.Lines);
-                Assert.IsEmpty(page.Annotations);
                 Assert.IsEmpty(page.Barcodes);
                 Assert.IsEmpty(page.Formulas);
-                Assert.IsEmpty(page.Images);
 
                 AssertSingleEmptySpan(page.Spans);
 
-                Assert.AreEqual(DocumentPageKind.Document, page.Kind);
                 Assert.AreEqual(pageNumber, page.PageNumber);
             }
 
@@ -133,15 +130,15 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
             }
         }
 
-        private void ValidateIrs1040ClassifierResult(AnalyzeResult analyzeResult)
+        private void ValidateIrs1040ClassifierResult(AnalyzeResult analyzeResult, string expectedClassifierId)
         {
-            ValidateGenericClassifierResult(analyzeResult);
+            ValidateGenericClassifierResult(analyzeResult, expectedClassifierId);
 
             Assert.AreEqual(4, analyzeResult.Pages.Count);
 
             foreach (var page in analyzeResult.Pages)
             {
-                Assert.AreEqual(0f, page.Angle);
+                Assert.That(page.Angle, Is.EqualTo(0f).Within(0.05f));
                 Assert.AreEqual(8.5f, page.Width);
                 Assert.AreEqual(11f, page.Height);
                 Assert.AreEqual(DocumentPageLengthUnit.Inch, page.Unit);

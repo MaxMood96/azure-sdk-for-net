@@ -7,6 +7,7 @@ using Azure.AI.FormRecognizer.Models;
 using Azure.AI.FormRecognizer.Training;
 using Azure.Core.TestFramework;
 using Azure.Identity;
+using NUnit.Framework;
 
 namespace Azure.AI.FormRecognizer.Samples
 {
@@ -66,6 +67,7 @@ namespace Azure.AI.FormRecognizer.Samples
         }
 
         [RecordedTest]
+        [Ignore("https://github.com/Azure/azure-sdk-for-net/issues/47689")]
         public async Task StartLongRunningOperation()
         {
             string endpoint = TestEnvironment.Endpoint;
@@ -73,13 +75,13 @@ namespace Azure.AI.FormRecognizer.Samples
             var credential = new AzureKeyCredential(apiKey);
             var client = new FormTrainingClient(new Uri(endpoint), credential);
 
-            Uri trainingFileUri = new Uri(TestEnvironment.BlobContainerSasUrlV2);
+            Uri trainingFileUri = new Uri(TestEnvironment.BlobContainerSasUrl);
             TrainingOperation trainingOperation = await client.StartTrainingAsync(trainingFileUri, useTrainingLabels: false);
             Response<CustomFormModel> operationResponse = await trainingOperation.WaitForCompletionAsync();
             CustomFormModel model = operationResponse.Value;
 
-            string resourceId = TestEnvironment.TargetResourceId;
-            string resourceRegion = TestEnvironment.TargetResourceRegion;
+            string resourceId = TestEnvironment.ResourceId;
+            string resourceRegion = TestEnvironment.ResourceRegion;
             string modelId = model.ModelId;
             CopyAuthorization authorization = await client.GetCopyAuthorizationAsync(resourceId, resourceRegion);
 

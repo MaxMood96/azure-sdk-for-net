@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.DocumentAnalysis
 {
@@ -24,12 +23,12 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
             StringIndexType stringIndexType = default;
             string content = default;
             IReadOnlyList<DocumentPage> pages = default;
-            Optional<IReadOnlyList<DocumentParagraph>> paragraphs = default;
-            Optional<IReadOnlyList<DocumentTable>> tables = default;
-            Optional<IReadOnlyList<DocumentKeyValuePair>> keyValuePairs = default;
-            Optional<IReadOnlyList<DocumentStyle>> styles = default;
-            Optional<IReadOnlyList<DocumentLanguage>> languages = default;
-            Optional<IReadOnlyList<AnalyzedDocument>> documents = default;
+            IReadOnlyList<DocumentParagraph> paragraphs = default;
+            IReadOnlyList<DocumentTable> tables = default;
+            IReadOnlyList<DocumentKeyValuePair> keyValuePairs = default;
+            IReadOnlyList<DocumentStyle> styles = default;
+            IReadOnlyList<DocumentLanguage> languages = default;
+            IReadOnlyList<AnalyzedDocument> documents = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("apiVersion"u8))
@@ -66,7 +65,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DocumentParagraph> array = new List<DocumentParagraph>();
@@ -81,7 +79,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DocumentTable> array = new List<DocumentTable>();
@@ -96,7 +93,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DocumentKeyValuePair> array = new List<DocumentKeyValuePair>();
@@ -111,7 +107,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DocumentStyle> array = new List<DocumentStyle>();
@@ -126,7 +121,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DocumentLanguage> array = new List<DocumentLanguage>();
@@ -141,7 +135,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<AnalyzedDocument> array = new List<AnalyzedDocument>();
@@ -153,7 +146,26 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     continue;
                 }
             }
-            return new AnalyzeResult(apiVersion, modelId, stringIndexType, content, pages, Optional.ToList(paragraphs), Optional.ToList(tables), Optional.ToList(keyValuePairs), Optional.ToList(styles), Optional.ToList(languages), Optional.ToList(documents));
+            return new AnalyzeResult(
+                apiVersion,
+                modelId,
+                stringIndexType,
+                content,
+                pages,
+                paragraphs ?? new ChangeTrackingList<DocumentParagraph>(),
+                tables ?? new ChangeTrackingList<DocumentTable>(),
+                keyValuePairs ?? new ChangeTrackingList<DocumentKeyValuePair>(),
+                styles ?? new ChangeTrackingList<DocumentStyle>(),
+                languages ?? new ChangeTrackingList<DocumentLanguage>(),
+                documents ?? new ChangeTrackingList<AnalyzedDocument>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static AnalyzeResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeAnalyzeResult(document.RootElement);
         }
     }
 }

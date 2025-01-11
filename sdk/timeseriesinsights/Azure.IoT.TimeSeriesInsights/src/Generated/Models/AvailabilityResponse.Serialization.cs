@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.IoT.TimeSeriesInsights
 {
@@ -18,21 +17,28 @@ namespace Azure.IoT.TimeSeriesInsights
             {
                 return null;
             }
-            Optional<Availability> availability = default;
+            Availability availability = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("availability"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     availability = Availability.DeserializeAvailability(property.Value);
                     continue;
                 }
             }
-            return new AvailabilityResponse(availability.Value);
+            return new AvailabilityResponse(availability);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static AvailabilityResponse FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeAvailabilityResponse(document.RootElement);
         }
     }
 }

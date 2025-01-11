@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.IoT.Hub.Service.Models
 {
@@ -19,16 +18,15 @@ namespace Azure.IoT.Hub.Service.Models
             {
                 return null;
             }
-            Optional<bool> isSuccessful = default;
-            Optional<IReadOnlyList<DeviceRegistryOperationError>> errors = default;
-            Optional<IReadOnlyList<DeviceRegistryOperationWarning>> warnings = default;
+            bool? isSuccessful = default;
+            IReadOnlyList<DeviceRegistryOperationError> errors = default;
+            IReadOnlyList<DeviceRegistryOperationWarning> warnings = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("isSuccessful"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isSuccessful = property.Value.GetBoolean();
@@ -38,7 +36,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DeviceRegistryOperationError> array = new List<DeviceRegistryOperationError>();
@@ -53,7 +50,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DeviceRegistryOperationWarning> array = new List<DeviceRegistryOperationWarning>();
@@ -65,7 +61,15 @@ namespace Azure.IoT.Hub.Service.Models
                     continue;
                 }
             }
-            return new BulkRegistryOperationResponse(Optional.ToNullable(isSuccessful), Optional.ToList(errors), Optional.ToList(warnings));
+            return new BulkRegistryOperationResponse(isSuccessful, errors ?? new ChangeTrackingList<DeviceRegistryOperationError>(), warnings ?? new ChangeTrackingList<DeviceRegistryOperationWarning>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static BulkRegistryOperationResponse FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeBulkRegistryOperationResponse(document.RootElement);
         }
     }
 }

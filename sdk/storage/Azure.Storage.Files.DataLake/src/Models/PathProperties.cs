@@ -192,6 +192,21 @@ namespace Azure.Storage.Files.DataLake.Models
         public string EncryptionContext { get; internal set; }
 
         /// <summary>
+        /// Owner.
+        /// </summary>
+        public string Owner { get; internal set; }
+
+        /// <summary>
+        /// Group.
+        /// </summary>
+        public string Group { get; internal set; }
+
+        /// <summary>
+        /// Permissions.
+        /// </summary>
+        public string Permissions { get; internal set; }
+
+        /// <summary>
         /// If this path represents a directory.
         /// </summary>
         public bool IsDirectory
@@ -214,6 +229,12 @@ namespace Azure.Storage.Files.DataLake.Models
                 }
             }
         }
+
+        /// <summary>
+        /// Optional.  The POSIX access control list for the file or directory.
+        /// </summary>
+        #pragma warning disable CA2227 // Collection properties should be read only
+        public IList<PathAccessControlItem> AccessControlList { get; set; }
 
         /// <summary>
         /// Prevent direct instantiation of PathProperties instances.

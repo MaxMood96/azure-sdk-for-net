@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
+using Azure.Maps.Common;
 
 namespace Azure.Maps.Routing.Models
 {
@@ -19,17 +19,16 @@ namespace Azure.Maps.Routing.Models
             {
                 return null;
             }
-            Optional<RouteSummary> summary = default;
-            Optional<IReadOnlyList<RouteLeg>> legs = default;
-            Optional<IReadOnlyList<RouteSection>> sections = default;
-            Optional<RouteGuidance> guidance = default;
+            RouteSummary summary = default;
+            IReadOnlyList<RouteLeg> legs = default;
+            IReadOnlyList<RouteSection> sections = default;
+            RouteGuidance guidance = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("summary"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     summary = RouteSummary.DeserializeRouteSummary(property.Value);
@@ -39,7 +38,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<RouteLeg> array = new List<RouteLeg>();
@@ -54,7 +52,6 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<RouteSection> array = new List<RouteSection>();
@@ -69,14 +66,21 @@ namespace Azure.Maps.Routing.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     guidance = RouteGuidance.DeserializeRouteGuidance(property.Value);
                     continue;
                 }
             }
-            return new RouteData(summary.Value, Optional.ToList(legs), Optional.ToList(sections), guidance.Value);
+            return new RouteData(summary, legs ?? new ChangeTrackingList<RouteLeg>(), sections ?? new ChangeTrackingList<RouteSection>(), guidance);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RouteData FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRouteData(document.RootElement);
         }
     }
 }

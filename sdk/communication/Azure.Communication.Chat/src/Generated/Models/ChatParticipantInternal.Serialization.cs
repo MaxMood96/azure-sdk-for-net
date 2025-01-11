@@ -7,7 +7,6 @@
 
 using System;
 using System.Text.Json;
-using Azure.Communication;
 using Azure.Core;
 
 namespace Azure.Communication.Chat
@@ -39,8 +38,8 @@ namespace Azure.Communication.Chat
                 return null;
             }
             CommunicationIdentifierModel communicationIdentifier = default;
-            Optional<string> displayName = default;
-            Optional<DateTimeOffset> shareHistoryTime = default;
+            string displayName = default;
+            DateTimeOffset? shareHistoryTime = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("communicationIdentifier"u8))
@@ -57,14 +56,29 @@ namespace Azure.Communication.Chat
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     shareHistoryTime = property.Value.GetDateTimeOffset("O");
                     continue;
                 }
             }
-            return new ChatParticipantInternal(communicationIdentifier, displayName.Value, Optional.ToNullable(shareHistoryTime));
+            return new ChatParticipantInternal(communicationIdentifier, displayName, shareHistoryTime);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ChatParticipantInternal FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeChatParticipantInternal(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

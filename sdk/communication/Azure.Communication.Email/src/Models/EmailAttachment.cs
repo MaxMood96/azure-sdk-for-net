@@ -4,7 +4,6 @@
 #nullable disable
 
 using System;
-using System.Text;
 using Azure.Core;
 
 namespace Azure.Communication.Email
@@ -31,23 +30,9 @@ namespace Azure.Communication.Email
 
         internal void ValidateAttachmentContent()
         {
-            if (string.IsNullOrWhiteSpace(ContentInBase64))
+            if (Content.ToMemory().IsEmpty)
             {
                 throw new ArgumentException(ErrorMessages.InvalidAttachmentContent);
-            }
-        }
-
-        internal string ContentInBase64
-        {
-            get
-            {
-                string valueToReturn = Convert.ToBase64String(Content.ToArray());
-                if (string.IsNullOrWhiteSpace(valueToReturn))
-                {
-                    throw new ArgumentException(ErrorMessages.InvalidAttachmentContent);
-                }
-
-                return valueToReturn;
             }
         }
 
@@ -55,5 +40,10 @@ namespace Azure.Communication.Email
         /// Contents of the attachment as BinaryData.
         /// </summary>
         public BinaryData Content { get; }
+
+        /// <summary>
+        /// Optional unique identifier (CID) to reference an inline attachment.
+        /// </summary>
+        public string ContentId { get; set; }
     }
 }
