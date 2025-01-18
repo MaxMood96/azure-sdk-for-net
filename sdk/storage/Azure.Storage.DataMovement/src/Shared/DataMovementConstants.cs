@@ -1,21 +1,27 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Runtime.InteropServices.ComTypes;
+using System;
 
 namespace Azure.Storage.DataMovement
 {
     internal class DataMovementConstants
     {
-        /// <summary>
-        /// Constants of the Data Movement library
-        /// </summary>
-        internal const int InitialMainPoolSize = 32;
-        internal const int InitialDownloadFileThreads = 32; // Max is 3000
-        internal const int CpuTuningMultiplier = 16;
-        internal const int MaxJobPartReaders = 64;
-        internal const int MaxJobChunkTasks = 3000;
-        internal const int StatusCheckInSec = 10;
+        internal const int DefaultStreamCopyBufferSize = 81920;  // Use the .NET default
+        internal const long DefaultInitialTransferSize = 32 * Constants.MB;
+        internal const long DefaultChunkSize = 4 * Constants.MB;
+
+        public const char PathForwardSlashDelimiterChar = '/';
+
+        internal static class Channels
+        {
+            internal const int MaxJobPartReaders = 32;
+            internal static int MaxJobChunkReaders = Environment.ProcessorCount * 8;
+            internal const int JobPartCapacity = 1000;
+            internal const int JobChunkCapacity = 1000;
+            internal const int DownloadChunkCapacity = 16;
+            internal const int StageChunkCapacity = 1000;
+        }
 
         internal static class ConcurrencyTuner
         {
@@ -53,126 +59,108 @@ namespace Azure.Storage.DataMovement
             internal const string Closing = "Closing log ";
         }
 
+        internal const int OneByte = 1;
+        internal const int ShortSizeInBytes = 2;
+        internal const int LongSizeInBytes = 8;
+        internal const int IntSizeInBytes = 4;
+        internal const int GuidSizeInBytes = 16;
+        internal const string StringTypeStr = "string";
+        internal const string StringArrayTypeStr = "string[]";
+
         /// <summary>
-        /// Constants used for plan job transfer files
+        /// Constants used for job plan files.
         /// </summary>
-        internal static class PlanFile
+        internal static class JobPlanFile
         {
-            // Job Plan file extension. e.g. the file extension will look like {transferid}--{jobpartNumber}.steV{schemaVersion}
-            internal const string FileExtension = ".steV";
-            internal const string JobPlanFileNameDelimiter = "--";
-            internal const string SchemaVersion = "b1"; // TODO: remove b for beta
+            internal const int SchemaVersion_1 = 1;
+            internal const int SchemaVersion = SchemaVersion_1;
+
+            internal const string FileExtension = ".ndm";
+
+            internal const int ProviderIdMaxLength = 5;
+            internal const int ProviderIdNumBytes = ProviderIdMaxLength * 2;
+
+            internal const int VersionIndex = 0;
+            internal const int TransferIdIndex = VersionIndex + IntSizeInBytes;
+            internal const int CrateTimeIndex = TransferIdIndex + GuidSizeInBytes;
+            internal const int OperationTypeIndex = CrateTimeIndex + LongSizeInBytes;
+            internal const int SourceProviderIdIndex = OperationTypeIndex + OneByte;
+            internal const int DestinationProviderIdIndex = SourceProviderIdIndex + ProviderIdNumBytes;
+            internal const int IsContainerIndex = DestinationProviderIdIndex + ProviderIdNumBytes;
+            internal const int EnumerationCompleteIndex = IsContainerIndex + OneByte;
+            internal const int JobStatusIndex = EnumerationCompleteIndex + OneByte;
+            internal const int ParentSourcePathOffsetIndex = JobStatusIndex + IntSizeInBytes;
+            internal const int ParentSourcePathLengthIndex = ParentSourcePathOffsetIndex + IntSizeInBytes;
+            internal const int ParentDestPathOffsetIndex = ParentSourcePathLengthIndex + IntSizeInBytes;
+            internal const int ParentDestPathLengthIndex = ParentDestPathOffsetIndex + IntSizeInBytes;
+            internal const int SourceCheckpointDetailsOffsetIndex = ParentDestPathLengthIndex + IntSizeInBytes;
+            internal const int SourceCheckpointDetailsLengthIndex = SourceCheckpointDetailsOffsetIndex + IntSizeInBytes;
+            internal const int DestinationCheckpointDetailsOffsetIndex = SourceCheckpointDetailsLengthIndex + IntSizeInBytes;
+            internal const int DestinationCheckpointDetailsLengthIndex = DestinationCheckpointDetailsOffsetIndex + IntSizeInBytes;
+            internal const int VariableLengthStartIndex = DestinationCheckpointDetailsLengthIndex + IntSizeInBytes;
+        }
+
+        /// <summary>
+        /// Constants used for job part plan files.
+        /// </summary>
+        internal static class JobPartPlanFile
+        {
+            internal const int SchemaVersion_1 = 1;
+            internal const int SchemaVersion = SchemaVersion_1;
+
+            // Job Plan file extension. e.g. the file extension will look like {transferid}.{jobpartNumber}.ndmpart
+            internal const string FileExtension = ".ndmpart";
             internal const int JobPartLength = 5;
             internal const int IdSize = 36; // Size of a guid with hyphens
-            // TODO: might change the value
-            internal const long MemoryMappedFileSize = 4 * Constants.MB;
-            internal const int CustomHeaderMaxBytes = 256;
-            internal const int Padding = 8;
 
-            internal const int LongSizeInBytes = 8; // 8 bytes
-            internal const int VersionStrMaxSize = 2; // 2 chars
-            internal const int TransferIdStrMaxSize = 36; // 36 chars
-            internal const int PathStrMaxSize = 4096; // 8182 bytes
-            internal const int ExtraQueryMaxSize = 1000; // 1000 char
-            internal const int HeaderValueMaxSize = 1000; // 1000 char
-            internal const int OneByte = 1; // 1 byte (bool's are one byte)
-            internal const int MetadataStrMaxSize = 4096; // 8182 bytes (can update to be larger if needed)
-            internal const int BlobTagsStrMaxSize = 4096; // 8182 bytes (can update to be larger if needed)
+            // UTF-8 encoding, so 2 bytes per char
+            internal const int TypeIdMaxStrLength = 10;
+            internal const int TypeIdNumBytes = TypeIdMaxStrLength * 2;
 
-            /// <summary>Index: 0</summary>
-            internal const int VersionIndex = 0; // Index: 0
-            /// <summary>Index: 2</summary>
-            internal const int StartTimeIndex = VersionIndex + VersionStrMaxSize;
-            /// <summary>Index: 10</summary>
-            internal const int TransferIdIndex = StartTimeIndex + LongSizeInBytes;
-            /// <summary>Index: 46</summary>
-            internal const int PartNumberIndex = TransferIdIndex + TransferIdStrMaxSize;
-            /// <summary>Index: 54</summary>
-            internal const int SourcePathLengthIndex = PartNumberIndex + LongSizeInBytes;
-            /// <summary>Index: 62</summary>
-            internal const int SourcePathIndex = SourcePathLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 4,158</summary>
-            internal const int SourceExtraQueryLengthIndex = SourcePathIndex + PathStrMaxSize;
-            /// <summary>Index: 4,166</summary>
-            internal const int SourceExtraQueryIndex = SourceExtraQueryLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 5,164</summary>
-            internal const int DestinationPathLengthIndex = SourceExtraQueryIndex + ExtraQueryMaxSize;
-            /// <summary>Index: 5,172</summary>
-            internal const int DestinationPathIndex = DestinationPathLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 9,268</summary>
-            internal const int DestinationExtraQueryLengthIndex = DestinationPathIndex + PathStrMaxSize;
-            /// <summary>Index: 9,276</summary>
-            internal const int DestinationExtraQueryIndex = DestinationExtraQueryLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 10,276</summary>
-            internal const int IsFinalPartIndex = DestinationExtraQueryIndex + ExtraQueryMaxSize;
-            /// <summary>Index: 10,277</summary>
-            internal const int ForceWriteIndex = IsFinalPartIndex + OneByte;
-            /// <summary>Index: 10,278</summary>
-            internal const int ForceIfReadOnlyIndex = ForceWriteIndex + OneByte;
-            /// <summary>Index: 10,279</summary>
-            internal const int AutoDecompressIndex = ForceIfReadOnlyIndex + OneByte;
-            /// <summary>Index: 10,280</summary>
-            internal const int PriorityIndex = AutoDecompressIndex + OneByte;
-            /// <summary>Index: 10,281</summary>
-            internal const int TTLAfterCompletionIndex = PriorityIndex + OneByte;
-            /// <summary>Index: 10,289</summary>
-            internal const int FromToIndex = TTLAfterCompletionIndex + LongSizeInBytes;
-            /// <summary>Index: 10,290</summary>
-            internal const int FolderPropertyModeIndex = FromToIndex + OneByte;
-            /// <summary>Index: 10,291</summary>
-            internal const int NumberChunksIndex = FolderPropertyModeIndex + OneByte;
+            internal const int VersionIndex = 0;
+            internal const int TransferIdIndex = VersionIndex + IntSizeInBytes;
+            internal const int PartNumberIndex = TransferIdIndex + GuidSizeInBytes;
+            internal const int CreateTimeIndex = PartNumberIndex + LongSizeInBytes;
+            internal const int SourceTypeIdIndex = CreateTimeIndex + LongSizeInBytes;
+            internal const int DestinationTypeIdIndex = SourceTypeIdIndex + TypeIdNumBytes;
+            internal const int SourcePathOffsetIndex = DestinationTypeIdIndex + TypeIdNumBytes;
+            internal const int SourcePathLengthIndex = SourcePathOffsetIndex + IntSizeInBytes;
+            internal const int DestinationPathOffsetIndex = SourcePathLengthIndex + IntSizeInBytes;
+            internal const int DestinationPathLengthIndex = DestinationPathOffsetIndex + IntSizeInBytes;
+            internal const int CreatePreferenceIndex = DestinationPathLengthIndex + IntSizeInBytes;
+            internal const int InitialTransferSizeIndex = CreatePreferenceIndex + OneByte;
+            internal const int ChunkSizeIndex = InitialTransferSizeIndex + LongSizeInBytes;
+            internal const int PriorityIndex = ChunkSizeIndex + LongSizeInBytes;
+            internal const int JobPartStatusIndex = PriorityIndex + OneByte;
+            internal const int VariableLengthStartIndex = JobPartStatusIndex + IntSizeInBytes;
+        }
 
-            // JobPartPlanDestinationBlob Indexes
-            /// <summary>Index: 10,299</summary>
-            internal const int DstBlobTypeIndex = NumberChunksIndex + LongSizeInBytes;
-            /// <summary>Index: 10,300</summary>
-            internal const int DstBlobNoGuessMimeTypeIndex = DstBlobTypeIndex + OneByte;
-            /// <summary>Index: 10,301</summary>
-            internal const int DstBlobContentTypeLengthIndex = DstBlobNoGuessMimeTypeIndex + OneByte;
-            /// <summary>Index: 10,309</summary>
-            internal const int DstBlobContentTypeIndex = DstBlobContentTypeLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 11,309</summary>
-            internal const int DstBlobContentEncodingLengthIndex = DstBlobContentTypeIndex + HeaderValueMaxSize;
-            /// <summary>Index: 11,317</summary>
-            internal const int DstBlobContentEncodingIndex = DstBlobContentEncodingLengthIndex + LongSizeInBytes;
-            /// <summary>Index: 12,317</summary>
-            internal const int DstBlobContentLanguageLengthIndex = DstBlobContentEncodingIndex + HeaderValueMaxSize;
-            /// <summary>Index: 12,325</summary>
-            internal const int DstBlobContentLanguageIndex = DstBlobContentLanguageLengthIndex + LongSizeInBytes;
-            internal const int DstBlobContentDispositionLengthIndex = DstBlobContentLanguageIndex + HeaderValueMaxSize;
-            internal const int DstBlobContentDispositionIndex = DstBlobContentDispositionLengthIndex + LongSizeInBytes;
-            internal const int DstBlobCacheControlLengthIndex = DstBlobContentDispositionIndex + HeaderValueMaxSize;
-            internal const int DstBlobCacheControlIndex = DstBlobCacheControlLengthIndex + LongSizeInBytes;
-            internal const int DstBlobBlockBlobTierIndex = DstBlobCacheControlIndex + HeaderValueMaxSize;
-            internal const int DstBlobPageBlobTierIndex = DstBlobBlockBlobTierIndex + OneByte;
-            internal const int DstBlobPutMd5Index = DstBlobPageBlobTierIndex + OneByte;
-            internal const int DstBlobMetadataLengthIndex = DstBlobPutMd5Index + OneByte;
-            internal const int DstBlobMetadataIndex = DstBlobMetadataLengthIndex + LongSizeInBytes;
-            internal const int DstBlobTagsLengthIndex = DstBlobMetadataIndex + MetadataStrMaxSize;
-            internal const int DstBlobTagsIndex = DstBlobTagsLengthIndex + LongSizeInBytes;
-            internal const int DstBlobIsSourceEncrypted = DstBlobTagsIndex + BlobTagsStrMaxSize;
-            internal const int DstBlobCpkScopeInfoLengthIndex = DstBlobIsSourceEncrypted + OneByte;
-            internal const int DstBlobCpkScopeInfoIndex = DstBlobCpkScopeInfoLengthIndex + LongSizeInBytes;
-            internal const int DstBlobBlockSizeIndex = DstBlobCpkScopeInfoIndex + HeaderValueMaxSize;
+        internal static class ErrorCode
+        {
+            internal static readonly string[] CannotOverwrite = { "BlobAlreadyExists", "Cannot overwrite file." };
+            internal static readonly string[] AccessDenied = { "AuthenticationFailed", "AuthorizationFailure", "access denied" };
+        }
 
-            // JobPartPlanDestinationLocal Indexes
-            internal const int DstLocalPreserveLastModifiedTimeIndex = DstBlobBlockSizeIndex + LongSizeInBytes;
-            internal const int DstLocalMD5VerificationOptionIndex = DstLocalPreserveLastModifiedTimeIndex + OneByte;
-            internal const int PreserveSMBPermissionsIndex = DstLocalMD5VerificationOptionIndex + OneByte;
-            internal const int PreserveSMBInfoIndex = PreserveSMBPermissionsIndex + OneByte;
-            internal const int S2SGetPropertiesInBackendIndex = PreserveSMBInfoIndex + OneByte;
-            internal const int S2SSourceChangeValidationIndex = S2SGetPropertiesInBackendIndex + OneByte;
-            internal const int DestLengthValidationIndex = S2SSourceChangeValidationIndex + OneByte;
-            internal const int S2SInvalidMetadataHandleOptionIndex = DestLengthValidationIndex + OneByte;
-            internal const int DeleteSnapshotsOptionIndex = S2SInvalidMetadataHandleOptionIndex + OneByte;
-            internal const int PermanentDeleteOptionIndex = DeleteSnapshotsOptionIndex + OneByte;
-            internal const int RehydratePriorityTypeIndex = PermanentDeleteOptionIndex + OneByte;
-            internal const int AtomicJobStatusIndex = RehydratePriorityTypeIndex + OneByte;
-            internal const int AtomicPartStatusIndex = AtomicJobStatusIndex + OneByte;
-            /// <summary>
-            /// Size of the JobPart Header
-            /// </summary>
-            internal const int JobPartHeaderSizeInBytes = AtomicPartStatusIndex + OneByte;
+        internal static class ResourceProperties
+        {
+            internal const string AccessTier = "AccessTier";
+            internal const string BlobType = "BlobType";
+            internal const string CreationTime = "CreationTime";
+            internal const string ChangedOnTime = "ChangedOnTime";
+            internal const string ContentType = "ContentType";
+            internal const string ContentHash = "ContentHash";
+            internal const string ContentEncoding = "ContentEncoding";
+            internal const string ContentLanguage = "ContentLanguage";
+            internal const string ContentDisposition = "ContentDisposition";
+            internal const string CacheControl = "CacheControl";
+            internal const string ETag = "ETag";
+            internal const string LastModified = "LastModified";
+            internal const string LastWrittenOn = "LastWrittenOn";
+            internal const string Metadata = "Metadata";
+            internal const string FileAttributes = "FileAttributes";
+            internal const string FilePermissions = "FilePermissions";
+            internal const string SourceFilePermissionKey = "SourceFilePermissionKey";
+            internal const string DestinationFilePermissionKey = "DestinationFilePermissionKey";
         }
     }
 }

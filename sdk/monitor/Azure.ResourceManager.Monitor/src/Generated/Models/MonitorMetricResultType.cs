@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Azure.ResourceManager.Monitor.Models
 {
-    /// <summary> Reduces the set of data collected. The syntax allowed depends on the operation. See the operation&apos;s description for details. </summary>
+    /// <summary> Reduces the set of data collected. The syntax allowed depends on the operation. See the operation's description for details. </summary>
     public readonly partial struct MonitorMetricResultType : IEquatable<MonitorMetricResultType>
     {
         private readonly string _value;
@@ -33,7 +33,7 @@ namespace Azure.ResourceManager.Monitor.Models
         public static bool operator ==(MonitorMetricResultType left, MonitorMetricResultType right) => left.Equals(right);
         /// <summary> Determines if two <see cref="MonitorMetricResultType"/> values are not the same. </summary>
         public static bool operator !=(MonitorMetricResultType left, MonitorMetricResultType right) => !left.Equals(right);
-        /// <summary> Converts a string to a <see cref="MonitorMetricResultType"/>. </summary>
+        /// <summary> Converts a <see cref="string"/> to a <see cref="MonitorMetricResultType"/>. </summary>
         public static implicit operator MonitorMetricResultType(string value) => new MonitorMetricResultType(value);
 
         /// <inheritdoc />
@@ -44,7 +44,7 @@ namespace Azure.ResourceManager.Monitor.Models
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+        public override int GetHashCode() => _value != null ? StringComparer.InvariantCultureIgnoreCase.GetHashCode(_value) : 0;
         /// <inheritdoc />
         public override string ToString() => _value;
     }

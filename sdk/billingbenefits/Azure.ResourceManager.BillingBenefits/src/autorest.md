@@ -5,7 +5,6 @@ Run `dotnet build /t:GenerateCode` to generate code.
 ``` yaml
 
 azure-arm: true
-generate-model-factory: false
 csharp: true
 library-name: BillingBenefits
 namespace: Azure.ResourceManager.BillingBenefits
@@ -16,7 +15,7 @@ clear-output-folder: true
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
-
+use-model-reader-writer: true
 list-exception:
 - /providers/Microsoft.BillingBenefits/savingsPlanOrderAliases/{savingsPlanOrderAliasName}
 - /providers/Microsoft.BillingBenefits/reservationOrderAliases/{reservationOrderAliasName}
@@ -28,7 +27,7 @@ format-by-name-rules:
   '*Uri': 'Uri'
   '*Uris': 'Uri'
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS
@@ -126,4 +125,6 @@ directive:
       $['/providers/Microsoft.BillingBenefits/savingsPlans'].get.parameters[4]['x-ms-client-name'] = 'skipToken';
   - remove-operation: Operation_List
 
+models-to-treat-empty-string-as-null:
+  - BillingBenefitsAppliedScopeProperties
 ```

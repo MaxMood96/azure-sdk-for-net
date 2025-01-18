@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -18,16 +17,15 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<StampKind> stampKind = default;
-            Optional<AppServicePlanAction> action = default;
-            Optional<AsyncStatus> status = default;
+            StampKind? stampKind = default;
+            AppServicePlanAction? action = default;
+            AsyncStatus? status = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("stampKind"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     stampKind = new StampKind(property.Value.GetString());
@@ -37,7 +35,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     action = new AppServicePlanAction(property.Value.GetString());
@@ -47,14 +44,21 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     status = new AsyncStatus(property.Value.GetString());
                     continue;
                 }
             }
-            return new AppServicePlanEventTypeDetail(Optional.ToNullable(stampKind), Optional.ToNullable(action), Optional.ToNullable(status));
+            return new AppServicePlanEventTypeDetail(stampKind, action, status);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static AppServicePlanEventTypeDetail FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeAppServicePlanEventTypeDetail(document.RootElement);
         }
     }
 }

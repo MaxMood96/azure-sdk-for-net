@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.DocumentAnalysis
 {
@@ -19,8 +18,8 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 return null;
             }
             string code = default;
-            Optional<string> message = default;
-            Optional<InnerError> innererror = default;
+            string message = default;
+            InnerError innererror = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("code"u8))
@@ -37,14 +36,21 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     innererror = DeserializeInnerError(property.Value);
                     continue;
                 }
             }
-            return new InnerError(code, message.Value, innererror.Value);
+            return new InnerError(code, message, innererror);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static InnerError FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeInnerError(document.RootElement);
         }
     }
 }

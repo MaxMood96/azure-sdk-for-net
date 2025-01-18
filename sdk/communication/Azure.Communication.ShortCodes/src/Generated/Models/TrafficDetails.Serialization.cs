@@ -54,19 +54,18 @@ namespace Azure.Communication.ShortCodes.Models
             {
                 return null;
             }
-            Optional<int> totalMonthlyVolume = default;
-            Optional<int> monthlyAverageMessagesFromUser = default;
-            Optional<int> monthlyAverageMessagesToUser = default;
-            Optional<bool> isSpiky = default;
-            Optional<string> spikeDetails = default;
-            Optional<int> estimatedRampUpTimeInDays = default;
+            int? totalMonthlyVolume = default;
+            int? monthlyAverageMessagesFromUser = default;
+            int? monthlyAverageMessagesToUser = default;
+            bool? isSpiky = default;
+            string spikeDetails = default;
+            int? estimatedRampUpTimeInDays = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("totalMonthlyVolume"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     totalMonthlyVolume = property.Value.GetInt32();
@@ -76,7 +75,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     monthlyAverageMessagesFromUser = property.Value.GetInt32();
@@ -86,7 +84,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     monthlyAverageMessagesToUser = property.Value.GetInt32();
@@ -96,7 +93,6 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isSpiky = property.Value.GetBoolean();
@@ -111,14 +107,35 @@ namespace Azure.Communication.ShortCodes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     estimatedRampUpTimeInDays = property.Value.GetInt32();
                     continue;
                 }
             }
-            return new TrafficDetails(Optional.ToNullable(totalMonthlyVolume), Optional.ToNullable(monthlyAverageMessagesFromUser), Optional.ToNullable(monthlyAverageMessagesToUser), Optional.ToNullable(isSpiky), spikeDetails.Value, Optional.ToNullable(estimatedRampUpTimeInDays));
+            return new TrafficDetails(
+                totalMonthlyVolume,
+                monthlyAverageMessagesFromUser,
+                monthlyAverageMessagesToUser,
+                isSpiky,
+                spikeDetails,
+                estimatedRampUpTimeInDays);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static TrafficDetails FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeTrafficDetails(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

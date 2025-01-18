@@ -12,14 +12,14 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
 {
     [ClientTestFixture(
         DocumentAnalysisClientOptions.ServiceVersion.V2022_08_31,
-        DocumentAnalysisClientOptions.ServiceVersion.V2023_02_28_Preview)]
+        DocumentAnalysisClientOptions.ServiceVersion.V2023_07_31)]
     public class DocumentAnalysisLiveTestBase : RecordedTestBase<DocumentAnalysisTestEnvironment>
     {
         /// <summary>
         /// The version of the REST API to test against.  This will be passed
         /// to the .ctor via ClientTestFixture's values.
         /// </summary>
-        private readonly DocumentAnalysisClientOptions.ServiceVersion _serviceVersion;
+        protected readonly DocumentAnalysisClientOptions.ServiceVersion _serviceVersion;
 
         public DocumentAnalysisLiveTestBase(bool isAsync, DocumentAnalysisClientOptions.ServiceVersion serviceVersion)
             : base(isAsync)
@@ -29,12 +29,12 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
             ServiceVersionString = _serviceVersion switch
             {
                 DocumentAnalysisClientOptions.ServiceVersion.V2022_08_31 => "2022-08-31",
-                DocumentAnalysisClientOptions.ServiceVersion.V2023_02_28_Preview => "2023-02-28-preview",
+                DocumentAnalysisClientOptions.ServiceVersion.V2023_07_31 => "2023-07-31",
                 _ => null
             };
 
             JsonPathSanitizers.Add("$..accessToken");
-            BodyKeySanitizers.Add(new BodyKeySanitizer("https://sanitized.blob.core.windows.net") { JsonPath = "$..containerUrl" });
+            BodyKeySanitizers.Add(new BodyKeySanitizer("$..containerUrl") { Value = "https://sanitized.blob.core.windows.net" });
             SanitizedHeaders.Add(Constants.AuthorizationHeader);
         }
 
@@ -111,32 +111,43 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         }
 
         /// <summary>
-        /// Builds a model and returns the associated <see cref="DisposableBuildModel"/> instance. Upon disposal, the model will be deleted.
+        /// Builds a document model and returns the associated <see cref="DisposableDocumentModel"/> instance. A cached
+        /// model may be returned instead when running in live mode.
         /// </summary>
-        /// <param name="modelId">Model Id.</param>
-        /// <param name="containerType">Type of container to use to execute training.</param>
-        /// <param name="buildMode">The technique to use to build the model. Defaults to <see cref="DocumentBuildMode.Template"/>.</param>
-        /// <returns>A <see cref="DisposableBuildModel"/> instance from which the trained model ID can be obtained.</returns>
-        protected async Task<DisposableBuildModel> CreateDisposableBuildModelAsync(string modelId, ContainerType containerType = default, DocumentBuildMode buildMode = default)
+        /// <param name="containerType">The type of container to use for training.</param>
+        /// <param name="options">A set of options to apply when configuring the request.</param>
+        /// <param name="skipCaching">If <c>true</c>, the model cache will be ignored and a new model will be returned. Otherwise, the model cache may be used.</param>
+        /// <returns>A <see cref="DisposableDocumentModel"/> instance from which the built model can be obtained.</returns>
+        protected async ValueTask<DisposableDocumentModel> BuildDisposableDocumentModelAsync(ContainerType containerType = default, BuildDocumentModelOptions options = null, bool skipCaching = false)
         {
-            var adminClient = CreateDocumentModelAdministrationClient();
-
+            var client = CreateDocumentModelAdministrationClient();
             string trainingFiles = containerType switch
             {
                 ContainerType.Singleforms => TestEnvironment.BlobContainerSasUrl,
                 ContainerType.MultipageFiles => TestEnvironment.MultipageBlobContainerSasUrl,
                 ContainerType.SelectionMarks => TestEnvironment.SelectionMarkBlobContainerSasUrl,
-                ContainerType.TableVariableRows => TestEnvironment.TableDynamicRowsContainerSasUrl,
-                ContainerType.TableFixedRows => TestEnvironment.TableFixedRowsContainerSasUrl,
                 _ => TestEnvironment.BlobContainerSasUrl,
             };
             var trainingFilesUri = new Uri(trainingFiles);
+            var buildMode = DocumentBuildMode.Template;
+            var modelId = Recording.GenerateId();
 
-            buildMode = (buildMode == default)
-                ? DocumentBuildMode.Template
-                : buildMode;
+            skipCaching |= (Recording.Mode == RecordedTestMode.Record) || (Recording.Mode == RecordedTestMode.Playback);
 
-            return await DisposableBuildModel.BuildModelAsync(adminClient, trainingFilesUri, buildMode, modelId);
+            if (skipCaching)
+            {
+                return await DisposableDocumentModel.BuildAsync(client, trainingFilesUri, buildMode, modelId, options);
+            }
+
+            var modelKey = new DocumentModelCache.ModelKey(_serviceVersion, containerType.ToString(), buildMode, options);
+
+            if (!DocumentModelCache.Models.TryGetValue(modelKey, out DisposableDocumentModel model))
+            {
+                model = await DisposableDocumentModel.BuildAsync(client, trainingFilesUri, buildMode, modelId, options, deleteOnDisposal: false);
+                DocumentModelCache.Models.Add(modelKey, model);
+            }
+
+            return model;
         }
 
         /// <summary>
@@ -146,15 +157,15 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         /// <param name="classifierId">The identifier of the classifier.</param>
         /// <param name="description">An optional classifier description.</param>
         /// <returns>A <see cref="DisposableDocumentClassifier"/> instance from which the built classifier can be obtained.</returns>
-        protected async Task<DisposableDocumentClassifier> BuildDisposableDocumentClassifier(string classifierId, string description = null)
+        protected async Task<DisposableDocumentClassifier> BuildDisposableDocumentClassifierAsync(string classifierId, string description = null)
         {
             var client = CreateDocumentModelAdministrationClient();
             var trainingFilesUri = new Uri(TestEnvironment.ClassifierTrainingSasUrl);
-            var sourceA = new AzureBlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-A/train" };
-            var sourceB = new AzureBlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-B/train" };
-            var sourceC = new AzureBlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-C/train" };
-            var sourceD = new AzureBlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-D/train" };
-            var sourceE = new AzureBlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-E/train" };
+            var sourceA = new BlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-A/train" };
+            var sourceB = new BlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-B/train" };
+            var sourceC = new BlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-C/train" };
+            var sourceD = new BlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-D/train" };
+            var sourceE = new BlobContentSource(trainingFilesUri) { Prefix = "IRS-1040-E/train" };
 
             var documentTypes = new Dictionary<string, ClassifierDocumentTypeDetails>()
             {
@@ -172,9 +183,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis.Tests
         {
             Singleforms,
             MultipageFiles,
-            SelectionMarks,
-            TableVariableRows,
-            TableFixedRows
+            SelectionMarks
         }
     }
 }

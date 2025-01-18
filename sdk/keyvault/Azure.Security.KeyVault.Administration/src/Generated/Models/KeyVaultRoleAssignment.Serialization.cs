@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Security.KeyVault.Administration
 {
@@ -18,10 +17,10 @@ namespace Azure.Security.KeyVault.Administration
             {
                 return null;
             }
-            Optional<string> id = default;
-            Optional<string> name = default;
-            Optional<string> type = default;
-            Optional<KeyVaultRoleAssignmentProperties> properties = default;
+            string id = default;
+            string name = default;
+            string type = default;
+            KeyVaultRoleAssignmentProperties properties = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("id"u8))
@@ -43,14 +42,21 @@ namespace Azure.Security.KeyVault.Administration
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     properties = KeyVaultRoleAssignmentProperties.DeserializeKeyVaultRoleAssignmentProperties(property.Value);
                     continue;
                 }
             }
-            return new KeyVaultRoleAssignment(id.Value, name.Value, type.Value, properties.Value);
+            return new KeyVaultRoleAssignment(id, name, type, properties);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static KeyVaultRoleAssignment FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeKeyVaultRoleAssignment(document.RootElement);
         }
     }
 }

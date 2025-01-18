@@ -43,10 +43,10 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
             {
                 return null;
             }
-            Optional<CertificateSource> trustedCertificates = default;
-            Optional<TlsValidationOptions> validationOptions = default;
+            CertificateSource trustedCertificates = default;
+            TlsValidationOptions validationOptions = default;
             string type = default;
-            Optional<CredentialsBase> credentials = default;
+            CredentialsBase credentials = default;
             string url = default;
             foreach (var property in element.EnumerateObject())
             {
@@ -54,7 +54,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     trustedCertificates = CertificateSource.DeserializeCertificateSource(property.Value);
@@ -64,7 +63,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     validationOptions = TlsValidationOptions.DeserializeTlsValidationOptions(property.Value);
@@ -79,7 +77,6 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     credentials = CredentialsBase.DeserializeCredentialsBase(property.Value);
@@ -91,7 +88,23 @@ namespace Azure.Media.VideoAnalyzer.Edge.Models
                     continue;
                 }
             }
-            return new TlsEndpoint(type, credentials.Value, url, trustedCertificates.Value, validationOptions.Value);
+            return new TlsEndpoint(type, credentials, url, trustedCertificates, validationOptions);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new TlsEndpoint FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeTlsEndpoint(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

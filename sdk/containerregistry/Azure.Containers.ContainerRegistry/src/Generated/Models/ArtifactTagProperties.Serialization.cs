@@ -7,7 +7,6 @@
 
 using System;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Containers.ContainerRegistry
 {
@@ -25,10 +24,10 @@ namespace Azure.Containers.ContainerRegistry
             string digest = default;
             DateTimeOffset createdTime = default;
             DateTimeOffset lastUpdateTime = default;
-            Optional<bool> deleteEnabled = default;
-            Optional<bool> writeEnabled = default;
-            Optional<bool> listEnabled = default;
-            Optional<bool> readEnabled = default;
+            bool? deleteEnabled = default;
+            bool? writeEnabled = default;
+            bool? listEnabled = default;
+            bool? readEnabled = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("registry"u8))
@@ -83,7 +82,6 @@ namespace Azure.Containers.ContainerRegistry
                                 {
                                     if (property1.Value.ValueKind == JsonValueKind.Null)
                                     {
-                                        property1.ThrowNonNullablePropertyIsNull();
                                         continue;
                                     }
                                     deleteEnabled = property1.Value.GetBoolean();
@@ -93,7 +91,6 @@ namespace Azure.Containers.ContainerRegistry
                                 {
                                     if (property1.Value.ValueKind == JsonValueKind.Null)
                                     {
-                                        property1.ThrowNonNullablePropertyIsNull();
                                         continue;
                                     }
                                     writeEnabled = property1.Value.GetBoolean();
@@ -103,7 +100,6 @@ namespace Azure.Containers.ContainerRegistry
                                 {
                                     if (property1.Value.ValueKind == JsonValueKind.Null)
                                     {
-                                        property1.ThrowNonNullablePropertyIsNull();
                                         continue;
                                     }
                                     listEnabled = property1.Value.GetBoolean();
@@ -113,7 +109,6 @@ namespace Azure.Containers.ContainerRegistry
                                 {
                                     if (property1.Value.ValueKind == JsonValueKind.Null)
                                     {
-                                        property1.ThrowNonNullablePropertyIsNull();
                                         continue;
                                     }
                                     readEnabled = property1.Value.GetBoolean();
@@ -126,7 +121,25 @@ namespace Azure.Containers.ContainerRegistry
                     continue;
                 }
             }
-            return new ArtifactTagProperties(registry, imageName, name, digest, createdTime, lastUpdateTime, Optional.ToNullable(deleteEnabled), Optional.ToNullable(writeEnabled), Optional.ToNullable(listEnabled), Optional.ToNullable(readEnabled));
+            return new ArtifactTagProperties(
+                registry,
+                imageName,
+                name,
+                digest,
+                createdTime,
+                lastUpdateTime,
+                deleteEnabled,
+                writeEnabled,
+                listEnabled,
+                readEnabled);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ArtifactTagProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeArtifactTagProperties(document.RootElement);
         }
     }
 }

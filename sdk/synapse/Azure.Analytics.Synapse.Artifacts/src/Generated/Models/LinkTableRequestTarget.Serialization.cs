@@ -47,10 +47,10 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 return null;
             }
-            Optional<string> tableName = default;
-            Optional<string> schemaName = default;
-            Optional<LinkTableRequestTargetDistributionOptions> distributionOptions = default;
-            Optional<LinkTableRequestTargetStructureOptions> structureOptions = default;
+            string tableName = default;
+            string schemaName = default;
+            LinkTableRequestTargetDistributionOptions distributionOptions = default;
+            LinkTableRequestTargetStructureOptions structureOptions = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("tableName"u8))
@@ -67,7 +67,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     distributionOptions = LinkTableRequestTargetDistributionOptions.DeserializeLinkTableRequestTargetDistributionOptions(property.Value);
@@ -77,14 +76,29 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     structureOptions = LinkTableRequestTargetStructureOptions.DeserializeLinkTableRequestTargetStructureOptions(property.Value);
                     continue;
                 }
             }
-            return new LinkTableRequestTarget(tableName.Value, schemaName.Value, distributionOptions.Value, structureOptions.Value);
+            return new LinkTableRequestTarget(tableName, schemaName, distributionOptions, structureOptions);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static LinkTableRequestTarget FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeLinkTableRequestTarget(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
 
         internal partial class LinkTableRequestTargetConverter : JsonConverter<LinkTableRequestTarget>
@@ -93,6 +107,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 writer.WriteObjectValue(model);
             }
+
             public override LinkTableRequestTarget Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

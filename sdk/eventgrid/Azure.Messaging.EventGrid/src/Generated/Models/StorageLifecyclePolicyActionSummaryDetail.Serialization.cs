@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -18,16 +17,15 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<long> totalObjectsCount = default;
-            Optional<long> successCount = default;
-            Optional<string> errorList = default;
+            long? totalObjectsCount = default;
+            long? successCount = default;
+            string errorList = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("totalObjectsCount"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     totalObjectsCount = property.Value.GetInt64();
@@ -37,7 +35,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     successCount = property.Value.GetInt64();
@@ -49,7 +46,15 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                     continue;
                 }
             }
-            return new StorageLifecyclePolicyActionSummaryDetail(Optional.ToNullable(totalObjectsCount), Optional.ToNullable(successCount), errorList.Value);
+            return new StorageLifecyclePolicyActionSummaryDetail(totalObjectsCount, successCount, errorList);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static StorageLifecyclePolicyActionSummaryDetail FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeStorageLifecyclePolicyActionSummaryDetail(document.RootElement);
         }
     }
 }

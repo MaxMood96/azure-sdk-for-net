@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -28,7 +28,7 @@ namespace Azure.Communication.CallAutomation
         /// <summary>
         /// The callLocator.
         /// </summary>
-        public Uri RecordingStateCallbackEndpoint { get; set; }
+        public Uri RecordingStateCallbackUri { get; set; }
 
         /// <summary>
         /// The recording channel.
@@ -46,6 +46,16 @@ namespace Azure.Communication.CallAutomation
         public RecordingFormat RecordingFormat { get; set; }
 
         /// <summary>
+        /// The pause on start option.
+        /// </summary>
+        public bool PauseOnStart { get; set; }
+
+        /// <summary>
+        /// The external storage option.
+        /// </summary>
+        public RecordingStorage RecordingStorage { get; set; }
+
+        /// <summary>
         /// The sequential order in which audio channels are assigned to participants in the unmixed recording.
         /// When 'recordingChannelType' is set to 'unmixed' and `audioChannelParticipantOrdering is not specified,
         /// the audio channel to participant mapping will be automatically assigned based on the order in which participant
@@ -54,7 +64,12 @@ namespace Azure.Communication.CallAutomation
         public IList<CommunicationIdentifier> AudioChannelParticipantOrdering { get; } =
             new List<CommunicationIdentifier>();
 
-        /// <summary> (Optional) Used to specify external storage for call recording. </summary>
-        public ExternalStorage ExternalStorage { get; set; }
+        /// <summary>
+        /// The channel affinity of call recording
+        /// When &apos;recordingChannelType&apos; is set to &apos;unmixed&apos;, if channelAffinity is not specified, &apos;channel&apos; will be automatically assigned.
+        /// Channel-Participant mapping details can be found in the metadata of the recording.
+        /// ///
+        /// </summary>
+        public IList<ChannelAffinity> ChannelAffinity { get; set; }
     }
 }

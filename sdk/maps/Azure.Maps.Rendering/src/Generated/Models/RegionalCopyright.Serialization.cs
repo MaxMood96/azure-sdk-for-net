@@ -7,7 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
+using Azure.Maps.Common;
 
 namespace Azure.Maps.Rendering
 {
@@ -19,15 +19,14 @@ namespace Azure.Maps.Rendering
             {
                 return null;
             }
-            Optional<IReadOnlyList<string>> copyrights = default;
-            Optional<RegionalCopyrightCountry> country = default;
+            IReadOnlyList<string> copyrights = default;
+            RegionalCopyrightCountry country = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("copyrights"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<string> array = new List<string>();
@@ -42,14 +41,21 @@ namespace Azure.Maps.Rendering
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     country = RegionalCopyrightCountry.DeserializeRegionalCopyrightCountry(property.Value);
                     continue;
                 }
             }
-            return new RegionalCopyright(Optional.ToList(copyrights), country.Value);
+            return new RegionalCopyright(copyrights ?? new ChangeTrackingList<string>(), country);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RegionalCopyright FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRegionalCopyright(document.RootElement);
         }
     }
 }

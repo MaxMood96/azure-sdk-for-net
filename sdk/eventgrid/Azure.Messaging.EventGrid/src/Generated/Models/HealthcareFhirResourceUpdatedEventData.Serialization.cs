@@ -8,7 +8,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -21,17 +20,16 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<HealthcareFhirResourceType> resourceType = default;
-            Optional<string> resourceFhirAccount = default;
-            Optional<string> resourceFhirId = default;
-            Optional<long> resourceVersionId = default;
+            HealthcareFhirResourceType? resourceType = default;
+            string resourceFhirAccount = default;
+            string resourceFhirId = default;
+            long? resourceVersionId = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("resourceType"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     resourceType = new HealthcareFhirResourceType(property.Value.GetString());
@@ -51,14 +49,21 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     resourceVersionId = property.Value.GetInt64();
                     continue;
                 }
             }
-            return new HealthcareFhirResourceUpdatedEventData(Optional.ToNullable(resourceType), resourceFhirAccount.Value, resourceFhirId.Value, Optional.ToNullable(resourceVersionId));
+            return new HealthcareFhirResourceUpdatedEventData(resourceType, resourceFhirAccount, resourceFhirId, resourceVersionId);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static HealthcareFhirResourceUpdatedEventData FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeHealthcareFhirResourceUpdatedEventData(document.RootElement);
         }
 
         internal partial class HealthcareFhirResourceUpdatedEventDataConverter : JsonConverter<HealthcareFhirResourceUpdatedEventData>
@@ -67,6 +72,7 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 throw new NotImplementedException();
             }
+
             public override HealthcareFhirResourceUpdatedEventData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

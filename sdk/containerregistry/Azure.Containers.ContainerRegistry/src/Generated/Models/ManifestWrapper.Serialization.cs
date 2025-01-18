@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Containers.ContainerRegistry
 {
@@ -19,18 +18,18 @@ namespace Azure.Containers.ContainerRegistry
             {
                 return null;
             }
-            Optional<string> mediaType = default;
-            Optional<IReadOnlyList<ManifestListAttributes>> manifests = default;
-            Optional<OciDescriptor> config = default;
-            Optional<IReadOnlyList<OciDescriptor>> layers = default;
-            Optional<OciAnnotations> annotations = default;
-            Optional<string> architecture = default;
-            Optional<string> name = default;
-            Optional<string> tag = default;
-            Optional<IReadOnlyList<FsLayer>> fsLayers = default;
-            Optional<IReadOnlyList<History>> history = default;
-            Optional<IReadOnlyList<ImageSignature>> signatures = default;
-            Optional<int> schemaVersion = default;
+            string mediaType = default;
+            IReadOnlyList<ManifestListAttributes> manifests = default;
+            OciDescriptor config = default;
+            IReadOnlyList<OciDescriptor> layers = default;
+            OciAnnotations annotations = default;
+            string architecture = default;
+            string name = default;
+            string tag = default;
+            IReadOnlyList<FsLayer> fsLayers = default;
+            IReadOnlyList<History> history = default;
+            IReadOnlyList<ImageSignature> signatures = default;
+            int? schemaVersion = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("mediaType"u8))
@@ -42,7 +41,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ManifestListAttributes> array = new List<ManifestListAttributes>();
@@ -57,7 +55,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     config = OciDescriptor.DeserializeOciDescriptor(property.Value);
@@ -67,7 +64,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<OciDescriptor> array = new List<OciDescriptor>();
@@ -107,7 +103,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<FsLayer> array = new List<FsLayer>();
@@ -122,7 +117,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<History> array = new List<History>();
@@ -137,7 +131,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<ImageSignature> array = new List<ImageSignature>();
@@ -152,14 +145,33 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     schemaVersion = property.Value.GetInt32();
                     continue;
                 }
             }
-            return new ManifestWrapper(Optional.ToNullable(schemaVersion), mediaType.Value, Optional.ToList(manifests), config.Value, Optional.ToList(layers), annotations.Value, architecture.Value, name.Value, tag.Value, Optional.ToList(fsLayers), Optional.ToList(history), Optional.ToList(signatures));
+            return new ManifestWrapper(
+                schemaVersion,
+                mediaType,
+                manifests ?? new ChangeTrackingList<ManifestListAttributes>(),
+                config,
+                layers ?? new ChangeTrackingList<OciDescriptor>(),
+                annotations,
+                architecture,
+                name,
+                tag,
+                fsLayers ?? new ChangeTrackingList<FsLayer>(),
+                history ?? new ChangeTrackingList<History>(),
+                signatures ?? new ChangeTrackingList<ImageSignature>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new ManifestWrapper FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeManifestWrapper(document.RootElement);
         }
     }
 }

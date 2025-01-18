@@ -5,7 +5,6 @@ Run `dotnet build /t:GenerateCode` to generate code.
 ``` yaml
 
 azure-arm: true
-generate-model-factory: false
 csharp: true
 library-name: ProviderHub
 namespace: Azure.ResourceManager.ProviderHub
@@ -13,11 +12,15 @@ require: https://github.com/Azure/azure-rest-api-specs/blob/34ba022add0034e30462
 tag: package-2020-11-20
 output-folder: $(this-folder)/Generated
 clear-output-folder: true
+sample-gen:
+  output-folder: $(this-folder)/../samples/Generated
+  clear-output-folder: true
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
+use-model-reader-writer: true
 
-# mgmt-debug: 
+# mgmt-debug:
 #  show-serialized-names: true
 
 rename-mapping:
@@ -64,6 +67,7 @@ rename-mapping:
   ResourceTypeRegistrationProperties.enableAsyncOperation: IsAsyncOperationEnabled
   ResourceTypeRegistrationProperties.enableThirdPartyS2S: IsThirdPartyS2SEnabled
   TemplateDeploymentOptions.preflightSupported: IsPreflightSupported
+  SkuLocationInfo.type: ExtendedLocationType
 
 prepend-rp-prefix:
   - ExtendedLocationOptions
@@ -77,7 +81,7 @@ format-by-name-rules:
   '*Uri': 'Uri'
   '*Uris': 'Uri'
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS
@@ -129,9 +133,9 @@ directive:
       $.NotificationRegistration.properties.properties['$ref'] = '#/definitions/NotificationRegistrationProperties';
       delete $.SkuResource.properties.properties['allOf'];
       $.SkuResource.properties.properties['$ref'] = '#/definitions/ResourceTypeSku';
-      $.CustomRolloutSpecification.properties.canary['allOf'];
+      delete $.CustomRolloutSpecification.properties.canary['allOf'];
       $.CustomRolloutSpecification.properties.canary['$ref'] = '#/definitions/TrafficRegions';
-      $.CustomRolloutSpecification.properties.providerRegistration['allOf'];
+      delete $.CustomRolloutSpecification.properties.providerRegistration['allOf'];
       $.CustomRolloutSpecification.properties.providerRegistration['$ref'] = '#/definitions/ProviderRegistration';
       delete $.CustomRolloutProperties.properties.specification['allOf'];
       $.CustomRolloutProperties.properties.specification['$ref'] = '#/definitions/CustomRolloutSpecification';

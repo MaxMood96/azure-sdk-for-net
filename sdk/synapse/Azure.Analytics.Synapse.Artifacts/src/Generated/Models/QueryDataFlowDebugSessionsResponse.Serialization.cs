@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Analytics.Synapse.Artifacts.Models
 {
@@ -22,15 +21,14 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 return null;
             }
-            Optional<IReadOnlyList<DataFlowDebugSessionInfo>> value = default;
-            Optional<string> nextLink = default;
+            IReadOnlyList<DataFlowDebugSessionInfo> value = default;
+            string nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<DataFlowDebugSessionInfo> array = new List<DataFlowDebugSessionInfo>();
@@ -47,7 +45,15 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                     continue;
                 }
             }
-            return new QueryDataFlowDebugSessionsResponse(Optional.ToList(value), nextLink.Value);
+            return new QueryDataFlowDebugSessionsResponse(value ?? new ChangeTrackingList<DataFlowDebugSessionInfo>(), nextLink);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static QueryDataFlowDebugSessionsResponse FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeQueryDataFlowDebugSessionsResponse(document.RootElement);
         }
 
         internal partial class QueryDataFlowDebugSessionsResponseConverter : JsonConverter<QueryDataFlowDebugSessionsResponse>
@@ -56,6 +62,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 throw new NotImplementedException();
             }
+
             public override QueryDataFlowDebugSessionsResponse Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

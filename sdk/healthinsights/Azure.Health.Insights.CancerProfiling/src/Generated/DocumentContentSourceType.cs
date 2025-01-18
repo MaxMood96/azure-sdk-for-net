@@ -11,8 +11,8 @@ using System.ComponentModel;
 namespace Azure.Health.Insights.CancerProfiling
 {
     /// <summary>
-    /// The type of the content's source. 
-    /// In case the source type is 'inline', the content is given as a string (for instance, text). 
+    /// The type of the content's source.
+    /// In case the source type is 'inline', the content is given as a string (for instance, text).
     /// In case the source type is 'reference', the content is given as a URI.
     /// </summary>
     public readonly partial struct DocumentContentSourceType : IEquatable<DocumentContentSourceType>
@@ -37,7 +37,7 @@ namespace Azure.Health.Insights.CancerProfiling
         public static bool operator ==(DocumentContentSourceType left, DocumentContentSourceType right) => left.Equals(right);
         /// <summary> Determines if two <see cref="DocumentContentSourceType"/> values are not the same. </summary>
         public static bool operator !=(DocumentContentSourceType left, DocumentContentSourceType right) => !left.Equals(right);
-        /// <summary> Converts a string to a <see cref="DocumentContentSourceType"/>. </summary>
+        /// <summary> Converts a <see cref="string"/> to a <see cref="DocumentContentSourceType"/>. </summary>
         public static implicit operator DocumentContentSourceType(string value) => new DocumentContentSourceType(value);
 
         /// <inheritdoc />
@@ -48,7 +48,7 @@ namespace Azure.Health.Insights.CancerProfiling
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+        public override int GetHashCode() => _value != null ? StringComparer.InvariantCultureIgnoreCase.GetHashCode(_value) : 0;
         /// <inheritdoc />
         public override string ToString() => _value;
     }

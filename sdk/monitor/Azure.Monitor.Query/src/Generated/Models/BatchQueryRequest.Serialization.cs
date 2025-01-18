@@ -30,19 +30,21 @@ namespace Azure.Monitor.Query.Models
             }
             writer.WritePropertyName("body"u8);
             writer.WriteObjectValue(Body);
-            if (Optional.IsDefined(Path))
-            {
-                writer.WritePropertyName("path"u8);
-                writer.WriteStringValue(Path);
-            }
-            if (Optional.IsDefined(Method))
-            {
-                writer.WritePropertyName("method"u8);
-                writer.WriteStringValue(Method);
-            }
+            writer.WritePropertyName("path"u8);
+            writer.WriteStringValue(Path);
+            writer.WritePropertyName("method"u8);
+            writer.WriteStringValue(Method);
             writer.WritePropertyName("workspace"u8);
             writer.WriteStringValue(Workspace);
             writer.WriteEndObject();
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

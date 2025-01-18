@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Communication.CallAutomation
 {
@@ -19,11 +18,12 @@ namespace Azure.Communication.CallAutomation
             {
                 return null;
             }
-            Optional<string> callConnectionId = default;
-            Optional<string> serverCallId = default;
-            Optional<string> correlationId = default;
-            Optional<IReadOnlyList<CallParticipantInternal>> participants = default;
-            Optional<int> sequenceNumber = default;
+            string callConnectionId = default;
+            string serverCallId = default;
+            string correlationId = default;
+            int? sequenceNumber = default;
+            IReadOnlyList<CallParticipantInternal> participants = default;
+            ResultInformation resultInformation = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("callConnectionId"u8))
@@ -41,11 +41,19 @@ namespace Azure.Communication.CallAutomation
                     correlationId = property.Value.GetString();
                     continue;
                 }
+                if (property.NameEquals("sequenceNumber"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    sequenceNumber = property.Value.GetInt32();
+                    continue;
+                }
                 if (property.NameEquals("participants"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<CallParticipantInternal> array = new List<CallParticipantInternal>();
@@ -56,18 +64,31 @@ namespace Azure.Communication.CallAutomation
                     participants = array;
                     continue;
                 }
-                if (property.NameEquals("sequenceNumber"u8))
+                if (property.NameEquals("resultInformation"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    sequenceNumber = property.Value.GetInt32();
+                    resultInformation = ResultInformation.DeserializeResultInformation(property.Value);
                     continue;
                 }
             }
-            return new ParticipantsUpdatedInternal(callConnectionId.Value, serverCallId.Value, correlationId.Value, Optional.ToList(participants), Optional.ToNullable(sequenceNumber));
+            return new ParticipantsUpdatedInternal(
+                callConnectionId,
+                serverCallId,
+                correlationId,
+                sequenceNumber,
+                participants ?? new ChangeTrackingList<CallParticipantInternal>(),
+                resultInformation);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static ParticipantsUpdatedInternal FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeParticipantsUpdatedInternal(document.RootElement);
         }
     }
 }

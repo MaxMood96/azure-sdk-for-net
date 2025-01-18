@@ -13,7 +13,7 @@ namespace Azure.ResourceManager.Compute.Models
     /// <summary> The SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions. </summary>
     public partial class SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions
     {
-        /// <summary> Initializes a new instance of SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions. </summary>
+        /// <summary> Initializes a new instance of <see cref="SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions"/>. </summary>
         /// <param name="location"> The name of a supported Azure region. </param>
         /// <param name="edgeZone"> The name of the edge zone. </param>
         /// <param name="publisherName"> A valid image publisher. </param>
@@ -34,6 +34,11 @@ namespace Azure.ResourceManager.Compute.Models
             Skus = skus;
         }
 
+        /// <summary> Initializes a new instance of <see cref="SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions"/> for deserialization. </summary>
+        internal SubscriptionResourceGetVirtualMachineImagesEdgeZonesOptions()
+        {
+        }
+
         /// <summary> The name of a supported Azure region. </summary>
         public AzureLocation Location { get; }
         /// <summary> The name of the edge zone. </summary>
@@ -45,12 +50,10 @@ namespace Azure.ResourceManager.Compute.Models
         /// <summary> A valid image SKU. </summary>
         public string Skus { get; }
         /// <summary> The expand expression to apply on the operation. </summary>
-        public string Expand { get; set; } = null;
-
+        public string Expand { get; set; }
         /// <summary> An integer value specifying the number of images to return that matches supplied values. </summary>
-        public int? Top { get; set; } = null;
-
+        public int? Top { get; set; }
         /// <summary> Specifies the order of the results returned. Formatted as an OData query. </summary>
-        public string Orderby { get; set; } = null;
+        public string Orderby { get; set; }
     }
 }

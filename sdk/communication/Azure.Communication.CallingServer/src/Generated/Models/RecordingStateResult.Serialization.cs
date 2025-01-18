@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Communication.CallingServer
 {
@@ -18,8 +17,8 @@ namespace Azure.Communication.CallingServer
             {
                 return null;
             }
-            Optional<string> recordingId = default;
-            Optional<RecordingState> recordingState = default;
+            string recordingId = default;
+            RecordingState? recordingState = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("recordingId"u8))
@@ -31,14 +30,21 @@ namespace Azure.Communication.CallingServer
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     recordingState = new RecordingState(property.Value.GetString());
                     continue;
                 }
             }
-            return new RecordingStateResult(recordingId.Value, Optional.ToNullable(recordingState));
+            return new RecordingStateResult(recordingId, recordingState);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RecordingStateResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRecordingStateResult(document.RootElement);
         }
     }
 }

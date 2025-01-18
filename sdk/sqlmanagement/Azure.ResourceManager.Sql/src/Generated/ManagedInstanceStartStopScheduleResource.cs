@@ -9,23 +9,25 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using Azure.ResourceManager;
 using Azure.ResourceManager.Sql.Models;
 
 namespace Azure.ResourceManager.Sql
 {
     /// <summary>
     /// A Class representing a ManagedInstanceStartStopSchedule along with the instance operations that can be performed on it.
-    /// If you have a <see cref="ResourceIdentifier" /> you can construct a <see cref="ManagedInstanceStartStopScheduleResource" />
-    /// from an instance of <see cref="ArmClient" /> using the GetManagedInstanceStartStopScheduleResource method.
-    /// Otherwise you can get one from its parent resource <see cref="ManagedInstanceResource" /> using the GetManagedInstanceStartStopSchedule method.
+    /// If you have a <see cref="ResourceIdentifier"/> you can construct a <see cref="ManagedInstanceStartStopScheduleResource"/>
+    /// from an instance of <see cref="ArmClient"/> using the GetManagedInstanceStartStopScheduleResource method.
+    /// Otherwise you can get one from its parent resource <see cref="ManagedInstanceResource"/> using the GetManagedInstanceStartStopSchedule method.
     /// </summary>
     public partial class ManagedInstanceStartStopScheduleResource : ArmResource
     {
         /// <summary> Generate the resource identifier of a <see cref="ManagedInstanceStartStopScheduleResource"/> instance. </summary>
+        /// <param name="subscriptionId"> The subscriptionId. </param>
+        /// <param name="resourceGroupName"> The resourceGroupName. </param>
+        /// <param name="managedInstanceName"> The managedInstanceName. </param>
+        /// <param name="startStopScheduleName"> The startStopScheduleName. </param>
         public static ResourceIdentifier CreateResourceIdentifier(string subscriptionId, string resourceGroupName, string managedInstanceName, ManagedInstanceStartStopScheduleName startStopScheduleName)
         {
             var resourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Sql/managedInstances/{managedInstanceName}/startStopSchedules/{startStopScheduleName}";
@@ -36,12 +38,15 @@ namespace Azure.ResourceManager.Sql
         private readonly StartStopManagedInstanceSchedulesRestOperations _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient;
         private readonly ManagedInstanceStartStopScheduleData _data;
 
+        /// <summary> Gets the resource type for the operations. </summary>
+        public static readonly ResourceType ResourceType = "Microsoft.Sql/managedInstances/startStopSchedules";
+
         /// <summary> Initializes a new instance of the <see cref="ManagedInstanceStartStopScheduleResource"/> class for mocking. </summary>
         protected ManagedInstanceStartStopScheduleResource()
         {
         }
 
-        /// <summary> Initializes a new instance of the <see cref = "ManagedInstanceStartStopScheduleResource"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="ManagedInstanceStartStopScheduleResource"/> class. </summary>
         /// <param name="client"> The client parameters to use in these operations. </param>
         /// <param name="data"> The resource that is the target of operations. </param>
         internal ManagedInstanceStartStopScheduleResource(ArmClient client, ManagedInstanceStartStopScheduleData data) : this(client, data.Id)
@@ -62,9 +67,6 @@ namespace Azure.ResourceManager.Sql
 			ValidateResourceId(Id);
 #endif
         }
-
-        /// <summary> Gets the resource type for the operations. </summary>
-        public static readonly ResourceType ResourceType = "Microsoft.Sql/managedInstances/startStopSchedules";
 
         /// <summary> Gets whether or not the current instance has data. </summary>
         public virtual bool HasData { get; }
@@ -88,7 +90,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Gets the managed instance&apos;s Start/Stop schedule.
+        /// Gets the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -97,6 +99,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_Get</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -120,7 +130,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Gets the managed instance&apos;s Start/Stop schedule.
+        /// Gets the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -129,6 +139,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_Get</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -152,7 +170,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Deletes the managed instance&apos;s Start/Stop schedule.
+        /// Deletes the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -161,6 +179,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_Delete</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -173,7 +199,9 @@ namespace Azure.ResourceManager.Sql
             try
             {
                 var response = await _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.DeleteAsync(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, cancellationToken).ConfigureAwait(false);
-                var operation = new SqlArmOperation(response);
+                var uri = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateDeleteRequestUri(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name);
+                var rehydrationToken = NextLinkOperationImplementation.GetRehydrationToken(RequestMethod.Delete, uri.ToUri(), uri.ToString(), "None", null, OperationFinalStateVia.OriginalUri.ToString());
+                var operation = new SqlArmOperation(response, rehydrationToken);
                 if (waitUntil == WaitUntil.Completed)
                     await operation.WaitForCompletionResponseAsync(cancellationToken).ConfigureAwait(false);
                 return operation;
@@ -186,7 +214,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Deletes the managed instance&apos;s Start/Stop schedule.
+        /// Deletes the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -195,6 +223,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_Delete</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -207,7 +243,9 @@ namespace Azure.ResourceManager.Sql
             try
             {
                 var response = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.Delete(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, cancellationToken);
-                var operation = new SqlArmOperation(response);
+                var uri = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateDeleteRequestUri(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name);
+                var rehydrationToken = NextLinkOperationImplementation.GetRehydrationToken(RequestMethod.Delete, uri.ToUri(), uri.ToString(), "None", null, OperationFinalStateVia.OriginalUri.ToString());
+                var operation = new SqlArmOperation(response, rehydrationToken);
                 if (waitUntil == WaitUntil.Completed)
                     operation.WaitForCompletionResponse(cancellationToken);
                 return operation;
@@ -220,7 +258,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Creates or updates the managed instance&apos;s Start/Stop schedule.
+        /// Creates or updates the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -229,6 +267,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_CreateOrUpdate</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -245,7 +291,9 @@ namespace Azure.ResourceManager.Sql
             try
             {
                 var response = await _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateOrUpdateAsync(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, data, cancellationToken).ConfigureAwait(false);
-                var operation = new SqlArmOperation<ManagedInstanceStartStopScheduleResource>(Response.FromValue(new ManagedInstanceStartStopScheduleResource(Client, response), response.GetRawResponse()));
+                var uri = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateCreateOrUpdateRequestUri(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, data);
+                var rehydrationToken = NextLinkOperationImplementation.GetRehydrationToken(RequestMethod.Put, uri.ToUri(), uri.ToString(), "None", null, OperationFinalStateVia.OriginalUri.ToString());
+                var operation = new SqlArmOperation<ManagedInstanceStartStopScheduleResource>(Response.FromValue(new ManagedInstanceStartStopScheduleResource(Client, response), response.GetRawResponse()), rehydrationToken);
                 if (waitUntil == WaitUntil.Completed)
                     await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
                 return operation;
@@ -258,7 +306,7 @@ namespace Azure.ResourceManager.Sql
         }
 
         /// <summary>
-        /// Creates or updates the managed instance&apos;s Start/Stop schedule.
+        /// Creates or updates the managed instance's Start/Stop schedule.
         /// <list type="bullet">
         /// <item>
         /// <term>Request Path</term>
@@ -267,6 +315,14 @@ namespace Azure.ResourceManager.Sql
         /// <item>
         /// <term>Operation Id</term>
         /// <description>StartStopManagedInstanceSchedules_CreateOrUpdate</description>
+        /// </item>
+        /// <item>
+        /// <term>Default Api Version</term>
+        /// <description>2022-08-01-preview</description>
+        /// </item>
+        /// <item>
+        /// <term>Resource</term>
+        /// <description><see cref="ManagedInstanceStartStopScheduleResource"/></description>
         /// </item>
         /// </list>
         /// </summary>
@@ -283,7 +339,9 @@ namespace Azure.ResourceManager.Sql
             try
             {
                 var response = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateOrUpdate(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, data, cancellationToken);
-                var operation = new SqlArmOperation<ManagedInstanceStartStopScheduleResource>(Response.FromValue(new ManagedInstanceStartStopScheduleResource(Client, response), response.GetRawResponse()));
+                var uri = _managedInstanceStartStopScheduleStartStopManagedInstanceSchedulesRestClient.CreateCreateOrUpdateRequestUri(Id.SubscriptionId, Id.ResourceGroupName, Id.Parent.Name, Id.Name, data);
+                var rehydrationToken = NextLinkOperationImplementation.GetRehydrationToken(RequestMethod.Put, uri.ToUri(), uri.ToString(), "None", null, OperationFinalStateVia.OriginalUri.ToString());
+                var operation = new SqlArmOperation<ManagedInstanceStartStopScheduleResource>(Response.FromValue(new ManagedInstanceStartStopScheduleResource(Client, response), response.GetRawResponse()), rehydrationToken);
                 if (waitUntil == WaitUntil.Completed)
                     operation.WaitForCompletion(cancellationToken);
                 return operation;

@@ -8,7 +8,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.AI.FormRecognizer.Training;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.Models
 {
@@ -21,9 +20,9 @@ namespace Azure.AI.FormRecognizer.Models
                 return null;
             }
             CustomFormModelInfo modelInfo = default;
-            Optional<KeysResult> keys = default;
-            Optional<TrainResult> trainResult = default;
-            Optional<IReadOnlyList<TrainResult>> composedTrainResults = default;
+            KeysResult keys = default;
+            TrainResult trainResult = default;
+            IReadOnlyList<TrainResult> composedTrainResults = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("modelInfo"u8))
@@ -35,7 +34,6 @@ namespace Azure.AI.FormRecognizer.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     keys = KeysResult.DeserializeKeysResult(property.Value);
@@ -45,7 +43,6 @@ namespace Azure.AI.FormRecognizer.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     trainResult = TrainResult.DeserializeTrainResult(property.Value);
@@ -55,7 +52,6 @@ namespace Azure.AI.FormRecognizer.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<TrainResult> array = new List<TrainResult>();
@@ -67,7 +63,15 @@ namespace Azure.AI.FormRecognizer.Models
                     continue;
                 }
             }
-            return new Model(modelInfo, keys.Value, trainResult.Value, Optional.ToList(composedTrainResults));
+            return new Model(modelInfo, keys, trainResult, composedTrainResults ?? new ChangeTrackingList<TrainResult>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static Model FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeModel(document.RootElement);
         }
     }
 }

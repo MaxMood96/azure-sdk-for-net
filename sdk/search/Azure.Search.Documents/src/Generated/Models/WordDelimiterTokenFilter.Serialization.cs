@@ -84,16 +84,16 @@ namespace Azure.Search.Documents.Indexes.Models
             {
                 return null;
             }
-            Optional<bool> generateWordParts = default;
-            Optional<bool> generateNumberParts = default;
-            Optional<bool> catenateWords = default;
-            Optional<bool> catenateNumbers = default;
-            Optional<bool> catenateAll = default;
-            Optional<bool> splitOnCaseChange = default;
-            Optional<bool> preserveOriginal = default;
-            Optional<bool> splitOnNumerics = default;
-            Optional<bool> stemEnglishPossessive = default;
-            Optional<IList<string>> protectedWords = default;
+            bool? generateWordParts = default;
+            bool? generateNumberParts = default;
+            bool? catenateWords = default;
+            bool? catenateNumbers = default;
+            bool? catenateAll = default;
+            bool? splitOnCaseChange = default;
+            bool? preserveOriginal = default;
+            bool? splitOnNumerics = default;
+            bool? stemEnglishPossessive = default;
+            IList<string> protectedWords = default;
             string odataType = default;
             string name = default;
             foreach (var property in element.EnumerateObject())
@@ -102,7 +102,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     generateWordParts = property.Value.GetBoolean();
@@ -112,7 +111,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     generateNumberParts = property.Value.GetBoolean();
@@ -122,7 +120,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     catenateWords = property.Value.GetBoolean();
@@ -132,7 +129,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     catenateNumbers = property.Value.GetBoolean();
@@ -142,7 +138,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     catenateAll = property.Value.GetBoolean();
@@ -152,7 +147,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     splitOnCaseChange = property.Value.GetBoolean();
@@ -162,7 +156,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     preserveOriginal = property.Value.GetBoolean();
@@ -172,7 +165,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     splitOnNumerics = property.Value.GetBoolean();
@@ -182,7 +174,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     stemEnglishPossessive = property.Value.GetBoolean();
@@ -192,7 +183,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<string> array = new List<string>();
@@ -214,7 +204,35 @@ namespace Azure.Search.Documents.Indexes.Models
                     continue;
                 }
             }
-            return new WordDelimiterTokenFilter(odataType, name, Optional.ToNullable(generateWordParts), Optional.ToNullable(generateNumberParts), Optional.ToNullable(catenateWords), Optional.ToNullable(catenateNumbers), Optional.ToNullable(catenateAll), Optional.ToNullable(splitOnCaseChange), Optional.ToNullable(preserveOriginal), Optional.ToNullable(splitOnNumerics), Optional.ToNullable(stemEnglishPossessive), Optional.ToList(protectedWords));
+            return new WordDelimiterTokenFilter(
+                odataType,
+                name,
+                generateWordParts,
+                generateNumberParts,
+                catenateWords,
+                catenateNumbers,
+                catenateAll,
+                splitOnCaseChange,
+                preserveOriginal,
+                splitOnNumerics,
+                stemEnglishPossessive,
+                protectedWords ?? new ChangeTrackingList<string>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new WordDelimiterTokenFilter FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeWordDelimiterTokenFilter(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

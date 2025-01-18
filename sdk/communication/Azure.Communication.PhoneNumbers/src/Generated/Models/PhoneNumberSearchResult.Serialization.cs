@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Communication.PhoneNumbers
 {
@@ -27,8 +26,8 @@ namespace Azure.Communication.PhoneNumbers
             PhoneNumberCapabilities capabilities = default;
             PhoneNumberCost cost = default;
             DateTimeOffset searchExpiresBy = default;
-            Optional<int> errorCode = default;
-            Optional<PhoneNumberSearchResultError> error = default;
+            int? errorCode = default;
+            PhoneNumberSearchResultError? error = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("searchId"u8))
@@ -75,7 +74,6 @@ namespace Azure.Communication.PhoneNumbers
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     errorCode = property.Value.GetInt32();
@@ -85,14 +83,30 @@ namespace Azure.Communication.PhoneNumbers
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     error = new PhoneNumberSearchResultError(property.Value.GetString());
                     continue;
                 }
             }
-            return new PhoneNumberSearchResult(searchId, phoneNumbers, phoneNumberType, assignmentType, capabilities, cost, searchExpiresBy, Optional.ToNullable(errorCode), Optional.ToNullable(error));
+            return new PhoneNumberSearchResult(
+                searchId,
+                phoneNumbers,
+                phoneNumberType,
+                assignmentType,
+                capabilities,
+                cost,
+                searchExpiresBy,
+                errorCode,
+                error);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static PhoneNumberSearchResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializePhoneNumberSearchResult(document.RootElement);
         }
     }
 }

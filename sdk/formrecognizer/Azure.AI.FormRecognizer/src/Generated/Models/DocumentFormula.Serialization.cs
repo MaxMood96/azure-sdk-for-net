@@ -7,11 +7,10 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.DocumentAnalysis
 {
-    internal partial class DocumentFormula
+    public partial class DocumentFormula
     {
         internal static DocumentFormula DeserializeDocumentFormula(JsonElement element)
         {
@@ -21,7 +20,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
             }
             DocumentFormulaKind kind = default;
             string value = default;
-            Optional<IReadOnlyList<float>> polygon = default;
+            IReadOnlyList<float> polygon = default;
             DocumentSpan span = default;
             float confidence = default;
             foreach (var property in element.EnumerateObject())
@@ -40,7 +39,6 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<float> array = new List<float>();
@@ -62,7 +60,15 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     continue;
                 }
             }
-            return new DocumentFormula(kind, value, Optional.ToList(polygon), span, confidence);
+            return new DocumentFormula(kind, value, polygon ?? new ChangeTrackingList<float>(), span, confidence);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DocumentFormula FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDocumentFormula(document.RootElement);
         }
     }
 }

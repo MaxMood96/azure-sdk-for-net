@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Azure.Communication.CallAutomation
 {
@@ -12,17 +13,14 @@ namespace Azure.Communication.CallAutomation
     public class CallMediaRecognizeChoiceOptions : CallMediaRecognizeOptions
     {
         /// <summary> Initializes a new instance of CallMediaRecognizeChoiceOptions. </summary>
-        public CallMediaRecognizeChoiceOptions(CommunicationIdentifier targetParticipant, List<RecognizeChoice> recognizeChoices) : base(RecognizeInputType.Choices, targetParticipant)
+        public CallMediaRecognizeChoiceOptions(CommunicationIdentifier targetParticipant, IEnumerable<RecognitionChoice> choices) : base(RecognizeInputType.Choices, targetParticipant)
         {
-            RecognizeChoices = recognizeChoices;
+            Choices = choices.ToList<RecognitionChoice>();
         }
 
         /// <summary>
         /// The IvR choices for recognize
         /// </summary>
-        public IList<RecognizeChoice> RecognizeChoices { get; }
-
-        /// <summary> Speech language to be recognized, If not set default is en-US. </summary>
-        public string SpeechLanguage { get; set; }
+        public IList<RecognitionChoice> Choices { get; }
     }
 }

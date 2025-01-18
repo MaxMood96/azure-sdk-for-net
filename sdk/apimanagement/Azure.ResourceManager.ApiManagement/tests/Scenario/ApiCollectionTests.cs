@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Core.TestFramework;
@@ -43,7 +44,7 @@ namespace Azure.ResourceManager.ApiManagement.Tests
         }
 
         [Test]
-        public async Task CreateOrUpdate_GetAll_Get_Exists_Delete ()
+        public async Task CreateOrUpdate_GetAll_Get_Exists_Delete()
         {
             await CreateApiService();
             var collection = ApiServiceResource.GetApis();
@@ -57,7 +58,7 @@ namespace Azure.ResourceManager.ApiManagement.Tests
                     Query = "query3037"
                 },
                 DisplayName = "apiname1463",
-                ServiceUri = new Uri("http://newechoapi.cloudapp.net/api"),
+                ServiceLink = "http://newechoapi.cloudapp.net/api",
                 Path = "newapiPath",
                 Protocols = { ApiOperationInvokableProtocol.Https, ApiOperationInvokableProtocol.Http }
             };
@@ -75,6 +76,43 @@ namespace Azure.ResourceManager.ApiManagement.Tests
                 Assert.NotNull(newitem.Data.DisplayName);
                 await newitem.DeleteAsync(WaitUntil.Completed, ETag.All);
             }
+        }
+
+        [Test]
+        public async Task GetApiRevisionsByServiceTest()
+        {
+            await CreateApiService();
+            var collection = ApiServiceResource.GetApis();
+            var apiName = Recording.GenerateAssetName("testapi-");
+            var data = new ApiCreateOrUpdateContent()
+            {
+                Description = "apidescription5200",
+                SubscriptionKeyParameterNames = new SubscriptionKeyParameterNamesContract()
+                {
+                    Header = "header4520",
+                    Query = "query3037"
+                },
+                DisplayName = "apiname1463",
+                ServiceLink = "http://newechoapi.cloudapp.net/api",
+                Path = "newapiPath",
+                Protocols = { ApiOperationInvokableProtocol.Https, ApiOperationInvokableProtocol.Http }
+            };
+            var api = (await collection.CreateOrUpdateAsync(WaitUntil.Completed, apiName, data)).Value;
+
+            var apiRevisionContracts = await api.GetApiRevisionsByServiceAsync().ToEnumerableAsync();
+            Assert.IsNotEmpty(apiRevisionContracts.FirstOrDefault().PrivateUriString);
+        }
+
+        [Test]
+        public async Task ListApiByApiMgmtService()
+        {
+            await CreateApiService();
+            var sum = 0;
+            await foreach (var api in ApiServiceResource.GetApis())
+            {
+                sum++;
+            }
+            Assert.IsTrue(sum > 0);
         }
     }
 }

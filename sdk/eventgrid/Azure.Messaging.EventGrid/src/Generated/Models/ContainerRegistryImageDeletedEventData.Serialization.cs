@@ -8,7 +8,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Messaging.EventGrid.SystemEvents
 {
@@ -21,15 +20,15 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 return null;
             }
-            Optional<string> id = default;
-            Optional<DateTimeOffset> timestamp = default;
-            Optional<string> action = default;
-            Optional<string> location = default;
-            Optional<ContainerRegistryEventTarget> target = default;
-            Optional<ContainerRegistryEventRequest> request = default;
-            Optional<ContainerRegistryEventActor> actor = default;
-            Optional<ContainerRegistryEventSource> source = default;
-            Optional<ContainerRegistryEventConnectedRegistry> connectedRegistry = default;
+            string id = default;
+            DateTimeOffset? timestamp = default;
+            string action = default;
+            string location = default;
+            ContainerRegistryEventTarget target = default;
+            ContainerRegistryEventRequest request = default;
+            ContainerRegistryEventActor actor = default;
+            ContainerRegistryEventSource source = default;
+            ContainerRegistryEventConnectedRegistry connectedRegistry = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("id"u8))
@@ -41,7 +40,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     timestamp = property.Value.GetDateTimeOffset("O");
@@ -61,7 +59,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     target = ContainerRegistryEventTarget.DeserializeContainerRegistryEventTarget(property.Value);
@@ -71,7 +68,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     request = ContainerRegistryEventRequest.DeserializeContainerRegistryEventRequest(property.Value);
@@ -81,7 +77,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     actor = ContainerRegistryEventActor.DeserializeContainerRegistryEventActor(property.Value);
@@ -91,7 +86,6 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     source = ContainerRegistryEventSource.DeserializeContainerRegistryEventSource(property.Value);
@@ -101,14 +95,30 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     connectedRegistry = ContainerRegistryEventConnectedRegistry.DeserializeContainerRegistryEventConnectedRegistry(property.Value);
                     continue;
                 }
             }
-            return new ContainerRegistryImageDeletedEventData(id.Value, Optional.ToNullable(timestamp), action.Value, location.Value, target.Value, request.Value, actor.Value, source.Value, connectedRegistry.Value);
+            return new ContainerRegistryImageDeletedEventData(
+                id,
+                timestamp,
+                action,
+                location,
+                target,
+                request,
+                actor,
+                source,
+                connectedRegistry);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new ContainerRegistryImageDeletedEventData FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeContainerRegistryImageDeletedEventData(document.RootElement);
         }
 
         internal partial class ContainerRegistryImageDeletedEventDataConverter : JsonConverter<ContainerRegistryImageDeletedEventData>
@@ -117,6 +127,7 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             {
                 throw new NotImplementedException();
             }
+
             public override ContainerRegistryImageDeletedEventData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

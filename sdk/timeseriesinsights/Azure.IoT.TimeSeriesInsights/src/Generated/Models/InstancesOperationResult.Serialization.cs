@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.IoT.TimeSeriesInsights
 {
@@ -18,15 +17,14 @@ namespace Azure.IoT.TimeSeriesInsights
             {
                 return null;
             }
-            Optional<TimeSeriesInstance> instance = default;
-            Optional<TimeSeriesOperationError> error = default;
+            TimeSeriesInstance instance = default;
+            TimeSeriesOperationError error = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("instance"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     instance = TimeSeriesInstance.DeserializeTimeSeriesInstance(property.Value);
@@ -36,14 +34,21 @@ namespace Azure.IoT.TimeSeriesInsights
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     error = TimeSeriesOperationError.DeserializeTimeSeriesOperationError(property.Value);
                     continue;
                 }
             }
-            return new InstancesOperationResult(instance.Value, error.Value);
+            return new InstancesOperationResult(instance, error);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static InstancesOperationResult FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeInstancesOperationResult(document.RootElement);
         }
     }
 }

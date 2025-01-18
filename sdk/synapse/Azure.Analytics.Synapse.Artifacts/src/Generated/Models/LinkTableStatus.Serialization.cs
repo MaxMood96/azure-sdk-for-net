@@ -8,7 +8,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.Core;
 
 namespace Azure.Analytics.Synapse.Artifacts.Models
 {
@@ -21,15 +20,15 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 return null;
             }
-            Optional<string> id = default;
-            Optional<string> status = default;
-            Optional<string> errorMessage = default;
-            Optional<object> startTime = default;
-            Optional<object> stopTime = default;
-            Optional<string> linkTableId = default;
-            Optional<string> errorCode = default;
-            Optional<DateTimeOffset> lastProcessedData = default;
-            Optional<DateTimeOffset> lastTransactionCommitTime = default;
+            string id = default;
+            string status = default;
+            string errorMessage = default;
+            object startTime = default;
+            object stopTime = default;
+            string linkTableId = default;
+            string errorCode = default;
+            DateTimeOffset? lastProcessedData = default;
+            DateTimeOffset? lastTransactionCommitTime = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("id"u8))
@@ -51,7 +50,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     startTime = property.Value.GetObject();
@@ -61,7 +59,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     stopTime = property.Value.GetObject();
@@ -81,7 +78,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lastProcessedData = property.Value.GetDateTimeOffset("O");
@@ -91,14 +87,30 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     lastTransactionCommitTime = property.Value.GetDateTimeOffset("O");
                     continue;
                 }
             }
-            return new LinkTableStatus(id.Value, status.Value, errorMessage.Value, startTime.Value, stopTime.Value, linkTableId.Value, errorCode.Value, Optional.ToNullable(lastProcessedData), Optional.ToNullable(lastTransactionCommitTime));
+            return new LinkTableStatus(
+                id,
+                status,
+                errorMessage,
+                startTime,
+                stopTime,
+                linkTableId,
+                errorCode,
+                lastProcessedData,
+                lastTransactionCommitTime);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static LinkTableStatus FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeLinkTableStatus(document.RootElement);
         }
 
         internal partial class LinkTableStatusConverter : JsonConverter<LinkTableStatus>
@@ -107,6 +119,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 throw new NotImplementedException();
             }
+
             public override LinkTableStatus Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

@@ -7,7 +7,6 @@
 
 using System;
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.AI.FormRecognizer.Training
 {
@@ -23,8 +22,8 @@ namespace Azure.AI.FormRecognizer.Training
             CustomFormModelStatus status = default;
             DateTimeOffset createdDateTime = default;
             DateTimeOffset lastUpdatedDateTime = default;
-            Optional<string> modelName = default;
-            Optional<CustomFormModelProperties> attributes = default;
+            string modelName = default;
+            CustomFormModelProperties attributes = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("modelId"u8))
@@ -56,14 +55,27 @@ namespace Azure.AI.FormRecognizer.Training
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     attributes = CustomFormModelProperties.DeserializeCustomFormModelProperties(property.Value);
                     continue;
                 }
             }
-            return new CustomFormModelInfo(modelId, status, createdDateTime, lastUpdatedDateTime, modelName.Value, attributes.Value);
+            return new CustomFormModelInfo(
+                modelId,
+                status,
+                createdDateTime,
+                lastUpdatedDateTime,
+                modelName,
+                attributes);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static CustomFormModelInfo FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeCustomFormModelInfo(document.RootElement);
         }
     }
 }

@@ -6,8 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Communication;
-using Azure.Core;
 
 namespace Azure.Communication.CallAutomation
 {
@@ -19,15 +17,15 @@ namespace Azure.Communication.CallAutomation
             {
                 return null;
             }
-            Optional<CommunicationIdentifierModel> identifier = default;
-            Optional<bool> isMuted = default;
+            CommunicationIdentifierModel identifier = default;
+            bool? isMuted = default;
+            bool? isOnHold = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("identifier"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     identifier = CommunicationIdentifierModel.DeserializeCommunicationIdentifierModel(property.Value);
@@ -37,14 +35,30 @@ namespace Azure.Communication.CallAutomation
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     isMuted = property.Value.GetBoolean();
                     continue;
                 }
+                if (property.NameEquals("isOnHold"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    isOnHold = property.Value.GetBoolean();
+                    continue;
+                }
             }
-            return new CallParticipantInternal(identifier.Value, Optional.ToNullable(isMuted));
+            return new CallParticipantInternal(identifier, isMuted, isOnHold);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static CallParticipantInternal FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeCallParticipantInternal(document.RootElement);
         }
     }
 }

@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Azure.ResourceManager.CosmosDB.Models
 {
-    /// <summary> Indicates the minimum allowed Tls version. The default is Tls 1.0, except for Cassandra and Mongo API&apos;s, which only work with Tls 1.2. </summary>
+    /// <summary> Indicates the minimum allowed Tls version. The default is Tls 1.0, except for Cassandra and Mongo API's, which only work with Tls 1.2. </summary>
     public readonly partial struct CosmosDBMinimalTlsVersion : IEquatable<CosmosDBMinimalTlsVersion>
     {
         private readonly string _value;
@@ -36,7 +36,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
         public static bool operator ==(CosmosDBMinimalTlsVersion left, CosmosDBMinimalTlsVersion right) => left.Equals(right);
         /// <summary> Determines if two <see cref="CosmosDBMinimalTlsVersion"/> values are not the same. </summary>
         public static bool operator !=(CosmosDBMinimalTlsVersion left, CosmosDBMinimalTlsVersion right) => !left.Equals(right);
-        /// <summary> Converts a string to a <see cref="CosmosDBMinimalTlsVersion"/>. </summary>
+        /// <summary> Converts a <see cref="string"/> to a <see cref="CosmosDBMinimalTlsVersion"/>. </summary>
         public static implicit operator CosmosDBMinimalTlsVersion(string value) => new CosmosDBMinimalTlsVersion(value);
 
         /// <inheritdoc />
@@ -47,7 +47,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+        public override int GetHashCode() => _value != null ? StringComparer.InvariantCultureIgnoreCase.GetHashCode(_value) : 0;
         /// <inheritdoc />
         public override string ToString() => _value;
     }

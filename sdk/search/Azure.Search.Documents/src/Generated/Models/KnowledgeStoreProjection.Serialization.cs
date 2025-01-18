@@ -55,16 +55,15 @@ namespace Azure.Search.Documents.Indexes.Models
             {
                 return null;
             }
-            Optional<IList<KnowledgeStoreTableProjectionSelector>> tables = default;
-            Optional<IList<KnowledgeStoreObjectProjectionSelector>> objects = default;
-            Optional<IList<KnowledgeStoreFileProjectionSelector>> files = default;
+            IList<KnowledgeStoreTableProjectionSelector> tables = default;
+            IList<KnowledgeStoreObjectProjectionSelector> objects = default;
+            IList<KnowledgeStoreFileProjectionSelector> files = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("tables"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<KnowledgeStoreTableProjectionSelector> array = new List<KnowledgeStoreTableProjectionSelector>();
@@ -79,7 +78,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<KnowledgeStoreObjectProjectionSelector> array = new List<KnowledgeStoreObjectProjectionSelector>();
@@ -94,7 +92,6 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<KnowledgeStoreFileProjectionSelector> array = new List<KnowledgeStoreFileProjectionSelector>();
@@ -106,7 +103,23 @@ namespace Azure.Search.Documents.Indexes.Models
                     continue;
                 }
             }
-            return new KnowledgeStoreProjection(Optional.ToList(tables), Optional.ToList(objects), Optional.ToList(files));
+            return new KnowledgeStoreProjection(tables ?? new ChangeTrackingList<KnowledgeStoreTableProjectionSelector>(), objects ?? new ChangeTrackingList<KnowledgeStoreObjectProjectionSelector>(), files ?? new ChangeTrackingList<KnowledgeStoreFileProjectionSelector>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static KnowledgeStoreProjection FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeKnowledgeStoreProjection(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

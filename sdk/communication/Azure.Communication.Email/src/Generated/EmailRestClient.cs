@@ -29,7 +29,7 @@ namespace Azure.Communication.Email
         /// <param name="endpoint"> The communication resource, for example https://my-resource.communication.azure.com. </param>
         /// <param name="apiVersion"> Api Version. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="clientDiagnostics"/>, <paramref name="pipeline"/>, <paramref name="endpoint"/> or <paramref name="apiVersion"/> is null. </exception>
-        public EmailRestClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, Uri endpoint, string apiVersion = "2023-03-31")
+        public EmailRestClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, Uri endpoint, string apiVersion = "2024-07-01-preview")
         {
             ClientDiagnostics = clientDiagnostics ?? throw new ArgumentNullException(nameof(clientDiagnostics));
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
@@ -76,7 +76,7 @@ namespace Azure.Communication.Email
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -104,7 +104,7 @@ namespace Azure.Communication.Email
                         return ResponseWithHeaders.FromValue(value, headers, message.Response);
                     }
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message.Response);
+                    throw new RequestFailedException(message.Response);
             }
         }
 
@@ -150,7 +150,7 @@ namespace Azure.Communication.Email
                 case 202:
                     return ResponseWithHeaders.FromValue(headers, message0.Response);
                 default:
-                    throw await ClientDiagnostics.CreateRequestFailedExceptionAsync(message0.Response).ConfigureAwait(false);
+                    throw new RequestFailedException(message0.Response);
             }
         }
 
@@ -174,7 +174,7 @@ namespace Azure.Communication.Email
                 case 202:
                     return ResponseWithHeaders.FromValue(headers, message0.Response);
                 default:
-                    throw ClientDiagnostics.CreateRequestFailedException(message0.Response);
+                    throw new RequestFailedException(message0.Response);
             }
         }
     }

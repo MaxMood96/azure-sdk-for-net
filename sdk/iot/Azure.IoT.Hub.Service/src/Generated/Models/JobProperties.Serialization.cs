@@ -100,21 +100,21 @@ namespace Azure.IoT.Hub.Service.Models
             {
                 return null;
             }
-            Optional<string> jobId = default;
-            Optional<DateTimeOffset> startTimeUtc = default;
-            Optional<DateTimeOffset> endTimeUtc = default;
-            Optional<JobPropertiesType> type = default;
-            Optional<JobPropertiesStatus> status = default;
-            Optional<int> progress = default;
-            Optional<string> inputBlobContainerUri = default;
-            Optional<string> inputBlobName = default;
-            Optional<string> outputBlobContainerUri = default;
-            Optional<string> outputBlobName = default;
-            Optional<bool> excludeKeysInExport = default;
-            Optional<JobPropertiesStorageAuthenticationType> storageAuthenticationType = default;
-            Optional<string> failureReason = default;
-            Optional<bool> includeConfigurations = default;
-            Optional<string> configurationsBlobName = default;
+            string jobId = default;
+            DateTimeOffset? startTimeUtc = default;
+            DateTimeOffset? endTimeUtc = default;
+            JobPropertiesType? type = default;
+            JobPropertiesStatus? status = default;
+            int? progress = default;
+            string inputBlobContainerUri = default;
+            string inputBlobName = default;
+            string outputBlobContainerUri = default;
+            string outputBlobName = default;
+            bool? excludeKeysInExport = default;
+            JobPropertiesStorageAuthenticationType? storageAuthenticationType = default;
+            string failureReason = default;
+            bool? includeConfigurations = default;
+            string configurationsBlobName = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("jobId"u8))
@@ -126,7 +126,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     startTimeUtc = property.Value.GetDateTimeOffset("O");
@@ -136,7 +135,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     endTimeUtc = property.Value.GetDateTimeOffset("O");
@@ -146,7 +144,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     type = new JobPropertiesType(property.Value.GetString());
@@ -156,7 +153,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     status = new JobPropertiesStatus(property.Value.GetString());
@@ -166,7 +162,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     progress = property.Value.GetInt32();
@@ -196,7 +191,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     excludeKeysInExport = property.Value.GetBoolean();
@@ -206,7 +200,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     storageAuthenticationType = new JobPropertiesStorageAuthenticationType(property.Value.GetString());
@@ -221,7 +214,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     includeConfigurations = property.Value.GetBoolean();
@@ -233,7 +225,38 @@ namespace Azure.IoT.Hub.Service.Models
                     continue;
                 }
             }
-            return new JobProperties(jobId.Value, Optional.ToNullable(startTimeUtc), Optional.ToNullable(endTimeUtc), Optional.ToNullable(type), Optional.ToNullable(status), Optional.ToNullable(progress), inputBlobContainerUri.Value, inputBlobName.Value, outputBlobContainerUri.Value, outputBlobName.Value, Optional.ToNullable(excludeKeysInExport), Optional.ToNullable(storageAuthenticationType), failureReason.Value, Optional.ToNullable(includeConfigurations), configurationsBlobName.Value);
+            return new JobProperties(
+                jobId,
+                startTimeUtc,
+                endTimeUtc,
+                type,
+                status,
+                progress,
+                inputBlobContainerUri,
+                inputBlobName,
+                outputBlobContainerUri,
+                outputBlobName,
+                excludeKeysInExport,
+                storageAuthenticationType,
+                failureReason,
+                includeConfigurations,
+                configurationsBlobName);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static JobProperties FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeJobProperties(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

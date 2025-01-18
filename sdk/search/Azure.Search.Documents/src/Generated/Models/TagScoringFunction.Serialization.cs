@@ -41,7 +41,7 @@ namespace Azure.Search.Documents.Indexes.Models
             string type = default;
             string fieldName = default;
             double boost = default;
-            Optional<ScoringFunctionInterpolation> interpolation = default;
+            ScoringFunctionInterpolation? interpolation = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("tag"u8))
@@ -68,14 +68,29 @@ namespace Azure.Search.Documents.Indexes.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     interpolation = property.Value.GetString().ToScoringFunctionInterpolation();
                     continue;
                 }
             }
-            return new TagScoringFunction(type, fieldName, boost, Optional.ToNullable(interpolation), tag);
+            return new TagScoringFunction(type, fieldName, boost, interpolation, tag);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static new TagScoringFunction FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeTagScoringFunction(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal override RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
     }
 }

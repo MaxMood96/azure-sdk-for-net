@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
@@ -18,21 +17,28 @@ namespace Azure.Quantum.Jobs.Models
             {
                 return null;
             }
-            Optional<ErrorData> error = default;
+            ErrorData error = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("error"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     error = ErrorData.DeserializeErrorData(property.Value);
                     continue;
                 }
             }
-            return new RestError(error.Value);
+            return new RestError(error);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RestError FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRestError(document.RootElement);
         }
     }
 }

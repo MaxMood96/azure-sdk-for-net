@@ -7,21 +7,87 @@
 
 using System;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
-using Azure.ResourceManager.SecurityCenter;
 using Azure.ResourceManager.SecurityCenter.Models;
+using NUnit.Framework;
 
 namespace Azure.ResourceManager.SecurityCenter.Samples
 {
     public partial class Sample_SecuritySettingCollection
     {
-        // Get settings of subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task CreateOrUpdate_UpdateASettingForSubscription()
+        {
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/UpdateSetting_example.json
+            // this example is just showing the usage of "Settings_Update" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this SubscriptionResource created on azure
+            // for more information of creating SubscriptionResource, please refer to the document of SubscriptionResource
+            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
+            ResourceIdentifier subscriptionResourceId = SubscriptionResource.CreateResourceIdentifier(subscriptionId);
+            SubscriptionResource subscriptionResource = client.GetSubscriptionResource(subscriptionResourceId);
+
+            // get the collection of this SecuritySettingResource
+            SecuritySettingCollection collection = subscriptionResource.GetSecuritySettings();
+
+            // invoke the operation
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
+            SecuritySettingData data = new DataExportSettings
+            {
+                IsEnabled = true,
+            };
+            ArmOperation<SecuritySettingResource> lro = await collection.CreateOrUpdateAsync(WaitUntil.Completed, settingName, data);
+            SecuritySettingResource result = lro.Value;
+
+            // the variable result is a resource, you could call other operations on this instance as well
+            // but just for demo, we get its data from this resource instance
+            SecuritySettingData resourceData = result.Data;
+            // for demo we just print out the id
+            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Get_GetASettingOnSubscription()
+        {
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSetting_example.json
+            // this example is just showing the usage of "Settings_Get" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this SubscriptionResource created on azure
+            // for more information of creating SubscriptionResource, please refer to the document of SubscriptionResource
+            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
+            ResourceIdentifier subscriptionResourceId = SubscriptionResource.CreateResourceIdentifier(subscriptionId);
+            SubscriptionResource subscriptionResource = client.GetSubscriptionResource(subscriptionResourceId);
+
+            // get the collection of this SecuritySettingResource
+            SecuritySettingCollection collection = subscriptionResource.GetSecuritySettings();
+
+            // invoke the operation
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
+            SecuritySettingResource result = await collection.GetAsync(settingName);
+
+            // the variable result is a resource, you could call other operations on this instance as well
+            // but just for demo, we get its data from this resource instance
+            SecuritySettingData resourceData = result.Data;
+            // for demo we just print out the id
+            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetAll_GetSettingsOfSubscription()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSettings_example.json
@@ -51,45 +117,11 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
                 Console.WriteLine($"Succeeded on id: {resourceData.Id}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // Get a setting on subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Get_GetASettingOnSubscription()
-        {
-            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSetting_example.json
-            // this example is just showing the usage of "Settings_Get" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this SubscriptionResource created on azure
-            // for more information of creating SubscriptionResource, please refer to the document of SubscriptionResource
-            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
-            ResourceIdentifier subscriptionResourceId = SubscriptionResource.CreateResourceIdentifier(subscriptionId);
-            SubscriptionResource subscriptionResource = client.GetSubscriptionResource(subscriptionResourceId);
-
-            // get the collection of this SecuritySettingResource
-            SecuritySettingCollection collection = subscriptionResource.GetSecuritySettings();
-
-            // invoke the operation
-            SecuritySettingName settingName = SecuritySettingName.Mcas;
-            SecuritySettingResource result = await collection.GetAsync(settingName);
-
-            // the variable result is a resource, you could call other operations on this instance as well
-            // but just for demo, we get its data from this resource instance
-            SecuritySettingData resourceData = result.Data;
-            // for demo we just print out the id
-            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
-        }
-
-        // Get a setting on subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task Exists_GetASettingOnSubscription()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSetting_example.json
@@ -110,19 +142,18 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             SecuritySettingCollection collection = subscriptionResource.GetSecuritySettings();
 
             // invoke the operation
-            SecuritySettingName settingName = SecuritySettingName.Mcas;
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
             bool result = await collection.ExistsAsync(settingName);
 
             Console.WriteLine($"Succeeded: {result}");
         }
 
-        // Update a setting for subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task CreateOrUpdate_UpdateASettingForSubscription()
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task GetIfExists_GetASettingOnSubscription()
         {
-            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/UpdateSetting_example.json
-            // this example is just showing the usage of "Settings_Update" operation, for the dependent resources, they will have to be created separately.
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-05-01/examples/Settings/GetSetting_example.json
+            // this example is just showing the usage of "Settings_Get" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
             TokenCredential cred = new DefaultAzureCredential();
@@ -139,19 +170,22 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             SecuritySettingCollection collection = subscriptionResource.GetSecuritySettings();
 
             // invoke the operation
-            SecuritySettingName settingName = SecuritySettingName.Mcas;
-            SecuritySettingData data = new DataExportSettings()
-            {
-                IsEnabled = true,
-            };
-            ArmOperation<SecuritySettingResource> lro = await collection.CreateOrUpdateAsync(WaitUntil.Completed, settingName, data);
-            SecuritySettingResource result = lro.Value;
+            SecuritySettingName settingName = SecuritySettingName.Wdatp;
+            NullableResponse<SecuritySettingResource> response = await collection.GetIfExistsAsync(settingName);
+            SecuritySettingResource result = response.HasValue ? response.Value : null;
 
-            // the variable result is a resource, you could call other operations on this instance as well
-            // but just for demo, we get its data from this resource instance
-            SecuritySettingData resourceData = result.Data;
-            // for demo we just print out the id
-            Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+            if (result == null)
+            {
+                Console.WriteLine("Succeeded with null as result");
+            }
+            else
+            {
+                // the variable result is a resource, you could call other operations on this instance as well
+                // but just for demo, we get its data from this resource instance
+                SecuritySettingData resourceData = result.Data;
+                // for demo we just print out the id
+                Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+            }
         }
     }
 }

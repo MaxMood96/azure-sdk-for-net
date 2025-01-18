@@ -22,7 +22,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             if (Optional.IsDefined(PackagePath))
             {
                 writer.WritePropertyName("packagePath"u8);
-                writer.WriteObjectValue(PackagePath);
+                writer.WriteObjectValue<object>(PackagePath);
             }
             if (Optional.IsDefined(Type))
             {
@@ -44,7 +44,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             if (Optional.IsDefined(ConfigurationPath))
             {
                 writer.WritePropertyName("configurationPath"u8);
-                writer.WriteObjectValue(ConfigurationPath);
+                writer.WriteObjectValue<object>(ConfigurationPath);
             }
             if (Optional.IsDefined(ConfigurationAccessCredential))
             {
@@ -59,7 +59,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             if (Optional.IsDefined(PackageContent))
             {
                 writer.WritePropertyName("packageContent"u8);
-                writer.WriteObjectValue(PackageContent);
+                writer.WriteObjectValue<object>(PackageContent);
             }
             if (Optional.IsDefined(PackageLastModifiedDate))
             {
@@ -86,23 +86,22 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 return null;
             }
-            Optional<object> packagePath = default;
-            Optional<SsisPackageLocationType> type = default;
-            Optional<SecretBase> packagePassword = default;
-            Optional<SsisAccessCredential> accessCredential = default;
-            Optional<object> configurationPath = default;
-            Optional<SsisAccessCredential> configurationAccessCredential = default;
-            Optional<string> packageName = default;
-            Optional<object> packageContent = default;
-            Optional<string> packageLastModifiedDate = default;
-            Optional<IList<SsisChildPackage>> childPackages = default;
+            object packagePath = default;
+            SsisPackageLocationType? type = default;
+            SecretBase packagePassword = default;
+            SsisAccessCredential accessCredential = default;
+            object configurationPath = default;
+            SsisAccessCredential configurationAccessCredential = default;
+            string packageName = default;
+            object packageContent = default;
+            string packageLastModifiedDate = default;
+            IList<SsisChildPackage> childPackages = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("packagePath"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     packagePath = property.Value.GetObject();
@@ -112,7 +111,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     type = new SsisPackageLocationType(property.Value.GetString());
@@ -131,7 +129,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             packagePassword = SecretBase.DeserializeSecretBase(property0.Value);
@@ -141,7 +138,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             accessCredential = SsisAccessCredential.DeserializeSsisAccessCredential(property0.Value);
@@ -151,7 +147,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             configurationPath = property0.Value.GetObject();
@@ -161,7 +156,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             configurationAccessCredential = SsisAccessCredential.DeserializeSsisAccessCredential(property0.Value);
@@ -176,7 +170,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             packageContent = property0.Value.GetObject();
@@ -191,7 +184,6 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
-                                property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
                             List<SsisChildPackage> array = new List<SsisChildPackage>();
@@ -206,7 +198,33 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
                     continue;
                 }
             }
-            return new SsisPackageLocation(packagePath.Value, Optional.ToNullable(type), packagePassword.Value, accessCredential.Value, configurationPath.Value, configurationAccessCredential.Value, packageName.Value, packageContent.Value, packageLastModifiedDate.Value, Optional.ToList(childPackages));
+            return new SsisPackageLocation(
+                packagePath,
+                type,
+                packagePassword,
+                accessCredential,
+                configurationPath,
+                configurationAccessCredential,
+                packageName,
+                packageContent,
+                packageLastModifiedDate,
+                childPackages ?? new ChangeTrackingList<SsisChildPackage>());
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static SsisPackageLocation FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeSsisPackageLocation(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
 
         internal partial class SsisPackageLocationConverter : JsonConverter<SsisPackageLocation>
@@ -215,6 +233,7 @@ namespace Azure.Analytics.Synapse.Artifacts.Models
             {
                 writer.WriteObjectValue(model);
             }
+
             public override SsisPackageLocation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

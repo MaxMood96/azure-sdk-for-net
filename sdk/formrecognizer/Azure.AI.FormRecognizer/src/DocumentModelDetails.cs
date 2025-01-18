@@ -18,7 +18,8 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
         /// <summary>
         /// Date and time (UTC) when the document model will expire.
         /// </summary>
-        internal DateTimeOffset? ExpirationDateTime { get; }
+        [CodeGenMember("ExpirationDateTime")]
+        public DateTimeOffset? ExpiresOn { get; }
 
         /// <summary>
         /// Supported document types.
@@ -26,6 +27,10 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
         [CodeGenMember("DocTypes")]
         public IReadOnlyDictionary<string, DocumentTypeDetails> DocumentTypes { get; }
 
-        internal string ApiVersion { get; }
+        /// <summary>
+        /// Service version used to create this document model.
+        /// </summary>
+        [CodeGenMember("ApiVersion")]
+        public string ServiceVersion { get; }
     }
 }

@@ -1,5 +1,30 @@
 # Release History
 
+## 1.9.0-beta.1 (Unreleased)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 1.8.0 (2024-09-04)
+### Features Added
+- Added MQTT client events support.
+
+## 1.7.0 (2023-08-28)
+
+### Bugs Fixed
+- Fix multi request origins validation.
+
+## 1.6.0 (2023-07-12)
+
+### Bugs Fixed
+- Fix secondary key validation failed.
+- Fix multi request origins validation.
+
 ## 1.5.0 (2023-03-21)
 
 ### Bugs Fixed

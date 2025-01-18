@@ -12,9 +12,9 @@ using Azure.ResourceManager.Resources.Models;
 using Azure.ResourceManager.Sql.Models;
 using NUnit.Framework;
 
-namespace Azure.ResourceManager.Sql.Tests.Scenario
+namespace Azure.ResourceManager.Sql.Tests
 {
-    public class ManagedInstanceTests : SqlManagementClientBase
+    public class ManagedInstanceTests : SqlManagementTestBase
     {
         private ResourceGroupResource _resourceGroup;
         private ResourceIdentifier _resourceGroupIdentifier;
@@ -24,18 +24,13 @@ namespace Azure.ResourceManager.Sql.Tests.Scenario
         {
         }
 
-        [OneTimeSetUp]
-        public async Task GlobalSetUp()
-        {
-            var rgLro = await GlobalClient.GetDefaultSubscriptionAsync().Result.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, SessionRecording.GenerateAssetName("Sql-RG-"), new ResourceGroupData(AzureLocation.WestUS2));
-            ResourceGroupResource resourceGroup = rgLro.Value;
-            _resourceGroupIdentifier = resourceGroup.Id;
-        }
-
         [SetUp]
         public async Task TestSetUp()
         {
             var client = GetArmClient();
+            var rgLro = await client.GetDefaultSubscriptionAsync().Result.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, Recording.GenerateAssetName("Sql-RG-"), new ResourceGroupData(AzureLocation.WestUS2));
+            ResourceGroupResource resourceGroup = rgLro.Value;
+            _resourceGroupIdentifier = resourceGroup.Id;
             _resourceGroup = await client.GetResourceGroupResource(_resourceGroupIdentifier).GetAsync();
         }
 

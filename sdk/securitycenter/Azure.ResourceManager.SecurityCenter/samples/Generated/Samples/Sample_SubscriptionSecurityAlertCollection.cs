@@ -7,56 +7,17 @@
 
 using System;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
-using Azure.ResourceManager.SecurityCenter;
 using Azure.ResourceManager.SecurityCenter.Models;
+using NUnit.Framework;
 
 namespace Azure.ResourceManager.SecurityCenter.Samples
 {
     public partial class Sample_SubscriptionSecurityAlertCollection
     {
-        // Get security alerts on a subscription from a security data location
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task GetAll_GetSecurityAlertsOnASubscriptionFromASecurityDataLocation()
-        {
-            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/GetAlertsSubscriptionsLocation_example.json
-            // this example is just showing the usage of "Alerts_ListSubscriptionLevelByRegion" operation, for the dependent resources, they will have to be created separately.
-
-            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
-            TokenCredential cred = new DefaultAzureCredential();
-            // authenticate your client
-            ArmClient client = new ArmClient(cred);
-
-            // this example assumes you already have this SecurityCenterLocationResource created on azure
-            // for more information of creating SecurityCenterLocationResource, please refer to the document of SecurityCenterLocationResource
-            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
-            AzureLocation ascLocation = new AzureLocation("westeurope");
-            ResourceIdentifier securityCenterLocationResourceId = SecurityCenterLocationResource.CreateResourceIdentifier(subscriptionId, ascLocation);
-            SecurityCenterLocationResource securityCenterLocation = client.GetSecurityCenterLocationResource(securityCenterLocationResourceId);
-
-            // get the collection of this SubscriptionSecurityAlertResource
-            SubscriptionSecurityAlertCollection collection = securityCenterLocation.GetSubscriptionSecurityAlerts();
-
-            // invoke the operation and iterate over the result
-            await foreach (SubscriptionSecurityAlertResource item in collection.GetAllAsync())
-            {
-                // the variable item is a resource, you could call other operations on this instance as well
-                // but just for demo, we get its data from this resource instance
-                SecurityAlertData resourceData = item.Data;
-                // for demo we just print out the id
-                Console.WriteLine($"Succeeded on id: {resourceData.Id}");
-            }
-
-            Console.WriteLine($"Succeeded");
-        }
-
-        // Get security alert on a subscription from a security data location
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task Get_GetSecurityAlertOnASubscriptionFromASecurityDataLocation()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/GetAlertSubscriptionLocation_example.json
@@ -88,9 +49,78 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             Console.WriteLine($"Succeeded on id: {resourceData.Id}");
         }
 
-        // Get security alert on a subscription from a security data location
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task GetAll_GetSecurityAlertsOnASubscriptionFromASecurityDataLocation()
+        {
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/GetAlertsSubscriptionsLocation_example.json
+            // this example is just showing the usage of "Alerts_ListSubscriptionLevelByRegion" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this SecurityCenterLocationResource created on azure
+            // for more information of creating SecurityCenterLocationResource, please refer to the document of SecurityCenterLocationResource
+            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
+            AzureLocation ascLocation = new AzureLocation("westeurope");
+            ResourceIdentifier securityCenterLocationResourceId = SecurityCenterLocationResource.CreateResourceIdentifier(subscriptionId, ascLocation);
+            SecurityCenterLocationResource securityCenterLocation = client.GetSecurityCenterLocationResource(securityCenterLocationResourceId);
+
+            // get the collection of this SubscriptionSecurityAlertResource
+            SubscriptionSecurityAlertCollection collection = securityCenterLocation.GetSubscriptionSecurityAlerts();
+
+            // invoke the operation and iterate over the result
+            await foreach (SubscriptionSecurityAlertResource item in collection.GetAllAsync())
+            {
+                // the variable item is a resource, you could call other operations on this instance as well
+                // but just for demo, we get its data from this resource instance
+                SecurityAlertData resourceData = item.Data;
+                // for demo we just print out the id
+                Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+            }
+
+            Console.WriteLine("Succeeded");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task Simulate_SimulateSecurityAlertsOnASubscription()
+        {
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/SimulateAlerts_example.json
+            // this example is just showing the usage of "Alerts_Simulate" operation, for the dependent resources, they will have to be created separately.
+
+            // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
+            TokenCredential cred = new DefaultAzureCredential();
+            // authenticate your client
+            ArmClient client = new ArmClient(cred);
+
+            // this example assumes you already have this SecurityCenterLocationResource created on azure
+            // for more information of creating SecurityCenterLocationResource, please refer to the document of SecurityCenterLocationResource
+            string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
+            AzureLocation ascLocation = new AzureLocation("centralus");
+            ResourceIdentifier securityCenterLocationResourceId = SecurityCenterLocationResource.CreateResourceIdentifier(subscriptionId, ascLocation);
+            SecurityCenterLocationResource securityCenterLocation = client.GetSecurityCenterLocationResource(securityCenterLocationResourceId);
+
+            // get the collection of this SubscriptionSecurityAlertResource
+            SubscriptionSecurityAlertCollection collection = securityCenterLocation.GetSubscriptionSecurityAlerts();
+
+            // invoke the operation
+            SecurityAlertSimulatorContent content = new SecurityAlertSimulatorContent
+            {
+                Properties = new SecurityAlertSimulatorBundlesRequestProperties
+                {
+                    Bundles = { SecurityAlertSimulatorBundleType.AppServices, SecurityAlertSimulatorBundleType.Dns, SecurityAlertSimulatorBundleType.KeyVaults, SecurityAlertSimulatorBundleType.KubernetesService, SecurityAlertSimulatorBundleType.ResourceManager, SecurityAlertSimulatorBundleType.SqlServers, SecurityAlertSimulatorBundleType.StorageAccounts, SecurityAlertSimulatorBundleType.VirtualMachines, SecurityAlertSimulatorBundleType.CosmosDbs },
+                },
+            };
+            await collection.SimulateAsync(WaitUntil.Completed, content);
+
+            Console.WriteLine("Succeeded");
+        }
+
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task Exists_GetSecurityAlertOnASubscriptionFromASecurityDataLocation()
         {
             // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/GetAlertSubscriptionLocation_example.json
@@ -118,13 +148,12 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             Console.WriteLine($"Succeeded: {result}");
         }
 
-        // Simulate security alerts on a subscription
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
-        public async Task Simulate_SimulateSecurityAlertsOnASubscription()
+        [Test]
+        [Ignore("Only validating compilation of examples")]
+        public async Task GetIfExists_GetSecurityAlertOnASubscriptionFromASecurityDataLocation()
         {
-            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/SimulateAlerts_example.json
-            // this example is just showing the usage of "Alerts_Simulate" operation, for the dependent resources, they will have to be created separately.
+            // Generated from example definition: specification/security/resource-manager/Microsoft.Security/stable/2022-01-01/examples/Alerts/GetAlertSubscriptionLocation_example.json
+            // this example is just showing the usage of "Alerts_GetSubscriptionLevel" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
             TokenCredential cred = new DefaultAzureCredential();
@@ -134,7 +163,7 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             // this example assumes you already have this SecurityCenterLocationResource created on azure
             // for more information of creating SecurityCenterLocationResource, please refer to the document of SecurityCenterLocationResource
             string subscriptionId = "20ff7fc3-e762-44dd-bd96-b71116dcdc23";
-            AzureLocation ascLocation = new AzureLocation("centralus");
+            AzureLocation ascLocation = new AzureLocation("westeurope");
             ResourceIdentifier securityCenterLocationResourceId = SecurityCenterLocationResource.CreateResourceIdentifier(subscriptionId, ascLocation);
             SecurityCenterLocationResource securityCenterLocation = client.GetSecurityCenterLocationResource(securityCenterLocationResourceId);
 
@@ -142,19 +171,22 @@ namespace Azure.ResourceManager.SecurityCenter.Samples
             SubscriptionSecurityAlertCollection collection = securityCenterLocation.GetSubscriptionSecurityAlerts();
 
             // invoke the operation
-            SecurityAlertSimulatorContent content = new SecurityAlertSimulatorContent()
-            {
-                Properties = new SecurityAlertSimulatorBundlesRequestProperties()
-                {
-                    Bundles =
-{
-SecurityAlertSimulatorBundleType.AppServices,SecurityAlertSimulatorBundleType.Dns,SecurityAlertSimulatorBundleType.KeyVaults,SecurityAlertSimulatorBundleType.KubernetesService,SecurityAlertSimulatorBundleType.ResourceManager,SecurityAlertSimulatorBundleType.SqlServers,SecurityAlertSimulatorBundleType.StorageAccounts,SecurityAlertSimulatorBundleType.VirtualMachines,SecurityAlertSimulatorBundleType.CosmosDbs
-},
-                },
-            };
-            await collection.SimulateAsync(WaitUntil.Completed, content);
+            string alertName = "2518770965529163669_F144EE95-A3E5-42DA-A279-967D115809AA";
+            NullableResponse<SubscriptionSecurityAlertResource> response = await collection.GetIfExistsAsync(alertName);
+            SubscriptionSecurityAlertResource result = response.HasValue ? response.Value : null;
 
-            Console.WriteLine($"Succeeded");
+            if (result == null)
+            {
+                Console.WriteLine("Succeeded with null as result");
+            }
+            else
+            {
+                // the variable result is a resource, you could call other operations on this instance as well
+                // but just for demo, we get its data from this resource instance
+                SecurityAlertData resourceData = result.Data;
+                // for demo we just print out the id
+                Console.WriteLine($"Succeeded on id: {resourceData.Id}");
+            }
         }
     }
 }

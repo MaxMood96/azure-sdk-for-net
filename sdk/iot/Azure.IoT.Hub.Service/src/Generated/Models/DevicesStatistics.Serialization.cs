@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.IoT.Hub.Service.Models
 {
@@ -18,16 +17,15 @@ namespace Azure.IoT.Hub.Service.Models
             {
                 return null;
             }
-            Optional<long> totalDeviceCount = default;
-            Optional<long> enabledDeviceCount = default;
-            Optional<long> disabledDeviceCount = default;
+            long? totalDeviceCount = default;
+            long? enabledDeviceCount = default;
+            long? disabledDeviceCount = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("totalDeviceCount"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     totalDeviceCount = property.Value.GetInt64();
@@ -37,7 +35,6 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     enabledDeviceCount = property.Value.GetInt64();
@@ -47,14 +44,21 @@ namespace Azure.IoT.Hub.Service.Models
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     disabledDeviceCount = property.Value.GetInt64();
                     continue;
                 }
             }
-            return new DevicesStatistics(Optional.ToNullable(totalDeviceCount), Optional.ToNullable(enabledDeviceCount), Optional.ToNullable(disabledDeviceCount));
+            return new DevicesStatistics(totalDeviceCount, enabledDeviceCount, disabledDeviceCount);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static DevicesStatistics FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeDevicesStatistics(document.RootElement);
         }
     }
 }

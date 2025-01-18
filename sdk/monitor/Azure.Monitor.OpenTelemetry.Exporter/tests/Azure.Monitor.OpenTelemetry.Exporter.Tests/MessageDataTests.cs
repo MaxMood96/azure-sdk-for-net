@@ -28,7 +28,6 @@ namespace Azure.Monitor.OpenTelemetry.Exporter.Tests
             {
                 builder.AddOpenTelemetry(options =>
                 {
-                    options.ParseStateValues = true;
                     options.AddInMemoryExporter(logRecords);
                 });
                 builder.AddFilter(typeof(LogsHelperTests).FullName, LogLevel.Trace);
@@ -42,7 +41,7 @@ namespace Azure.Monitor.OpenTelemetry.Exporter.Tests
 
             Assert.Equal("Log Message", messageData.Message);
             Assert.Equal(LogsHelper.GetSeverityLevel(logLevel), messageData.SeverityLevel);
-            Assert.Empty(messageData.Properties);
+            Assert.Single(messageData.Properties); // CategoryName property expected
             Assert.Empty(messageData.Measurements);
         }
     }

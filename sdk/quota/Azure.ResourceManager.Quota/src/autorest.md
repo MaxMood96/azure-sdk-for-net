@@ -5,17 +5,24 @@ Run `dotnet build /t:GenerateCode` to generate code.
 ``` yaml
 
 azure-arm: true
-generate-model-factory: false
 csharp: true
 library-name: Quota
 namespace: Azure.ResourceManager.Quota
-# default tag is a preview version
-require: https://github.com/Azure/azure-rest-api-specs/blob/34ba022add0034e30462b76e1548ce5a7e053e33/specification/quota/resource-manager/readme.md
+require: https://github.com/Azure/azure-rest-api-specs/blob/55c5a0cd6da80b2700333c01e9a9c6067de9cef0/specification/quota/resource-manager/readme.md
+#tag: package-2024-12-18-preview
 output-folder: $(this-folder)/Generated
 clear-output-folder: true
+sample-gen:
+  output-folder: $(this-folder)/../samples/Generated
+  clear-output-folder: true
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
+use-model-reader-writer: true
+enable-bicep-serialization: true
+
+#mgmt-debug: 
+#  show-serialized-names: true
 
 format-by-name-rules:
   'tenantId': 'uuid'
@@ -24,7 +31,7 @@ format-by-name-rules:
   '*Uri': 'Uri'
   '*Uris': 'Uri'
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS
@@ -46,5 +53,44 @@ rename-rules:
   SSO: Sso
   URI: Uri
   Etag: ETag|etag
+
+rename-mapping:
+  LimitJsonObject: QuotaLimitJsonObject
+  LimitObject: QuotaLimitObject
+  OperationList: QuotaOperationListResult
+  OperationResponse: QuotaOperationResult
+  OperationDisplay: QuotaOperationDisplay
+  ResourceName: QuotaRequestResourceName
+  SubRequest: QuotaSubRequestDetail
+  SubRequest.subRequestId: -|uuid
+  UsagesObject: QuotaUsagesObject
+  UsagesProperties: QuotaUsagesProperties
+  UsagesTypes: QuotaUsagesType
+  UsagesProperties.resourceType: ResourceTypeName
+  QuotaProperties.resourceType: ResourceTypeName
+  SubRequest.resourceType: ResourceTypeName
+  GroupQuotasEntity: GroupQuotaEntity
+  GroupQuotasEntityBase: GroupQuotaEntityBase
+  GroupQuotaSubscriptionId: GroupQuotaSubscription
+  GroupQuotaSubscriptionIdProperties: GroupQuotaSubscriptionProperties
+  QuotaAllocationRequestStatus.properties.requestSubmitTime: RequestSubmittedOn
+  SubmittedResourceRequestStatus: GroupQuotaRequestStatus
+  SubmittedResourceRequestStatusProperties: GroupQuotaRequestStatusProperties
+  SubmittedResourceRequestStatusProperties.requestSubmitTime: RequestSubmittedOn
+  AllocatedToSubscription: SubscriptionAllocatedQuota
+  RequestState: QuotaRequestStatus
+  ResourceUsages: GroupQuotaResourceUsages
+
+directive:
+# Correct the type of properties
+  - from: quota.json
+    where: $.definitions
+    transform: >
+      $.QuotaProperties.properties.quotaPeriod['format'] = 'duration';
+      $.UsagesProperties.properties.quotaPeriod['format'] = 'duration';
+
+list-exception:
+- /providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.Quota/groupQuotas/{groupQuotaName}/groupQuotaRequests/{requestId}
+- /providers/Microsoft.Management/managementGroups/{managementGroupId}/subscriptions/{subscriptionId}/providers/Microsoft.Quota/groupQuotas/{groupQuotaName}/quotaAllocationRequests/{allocationId}
 
 ```

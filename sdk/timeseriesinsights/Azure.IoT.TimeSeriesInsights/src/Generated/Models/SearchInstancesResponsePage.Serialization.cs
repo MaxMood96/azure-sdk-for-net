@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.IoT.TimeSeriesInsights
 {
@@ -18,15 +17,14 @@ namespace Azure.IoT.TimeSeriesInsights
             {
                 return null;
             }
-            Optional<SearchInstancesResponse> instances = default;
-            Optional<SearchHierarchyNodesResponse> hierarchyNodes = default;
+            SearchInstancesResponse instances = default;
+            SearchHierarchyNodesResponse hierarchyNodes = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("instances"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     instances = SearchInstancesResponse.DeserializeSearchInstancesResponse(property.Value);
@@ -36,14 +34,21 @@ namespace Azure.IoT.TimeSeriesInsights
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     hierarchyNodes = SearchHierarchyNodesResponse.DeserializeSearchHierarchyNodesResponse(property.Value);
                     continue;
                 }
             }
-            return new SearchInstancesResponsePage(instances.Value, hierarchyNodes.Value);
+            return new SearchInstancesResponsePage(instances, hierarchyNodes);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static SearchInstancesResponsePage FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeSearchInstancesResponsePage(document.RootElement);
         }
     }
 }

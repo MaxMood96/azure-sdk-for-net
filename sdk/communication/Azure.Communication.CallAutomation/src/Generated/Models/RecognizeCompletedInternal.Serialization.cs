@@ -6,7 +6,6 @@
 #nullable disable
 
 using System.Text.Json;
-using Azure.Core;
 
 namespace Azure.Communication.CallAutomation
 {
@@ -18,14 +17,15 @@ namespace Azure.Communication.CallAutomation
             {
                 return null;
             }
-            Optional<string> callConnectionId = default;
-            Optional<string> serverCallId = default;
-            Optional<string> correlationId = default;
-            Optional<string> operationContext = default;
-            Optional<ResultInformation> resultInformation = default;
-            Optional<CallMediaRecognitionType> recognitionType = default;
-            Optional<CollectTonesResult> collectTonesResult = default;
-            Optional<ChoiceResult> choiceResult = default;
+            string callConnectionId = default;
+            string serverCallId = default;
+            string correlationId = default;
+            string operationContext = default;
+            ResultInformation resultInformation = default;
+            CallMediaRecognitionType recognitionType = default;
+            DtmfResult dtmfResult = default;
+            ChoiceResult choiceResult = default;
+            SpeechResult speechResult = default;
             foreach (var property in element.EnumerateObject())
             {
                 if (property.NameEquals("callConnectionId"u8))
@@ -52,7 +52,6 @@ namespace Azure.Communication.CallAutomation
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     resultInformation = ResultInformation.DeserializeResultInformation(property.Value);
@@ -62,34 +61,57 @@ namespace Azure.Communication.CallAutomation
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     recognitionType = new CallMediaRecognitionType(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("collectTonesResult"u8))
+                if (property.NameEquals("dtmfResult"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    collectTonesResult = CollectTonesResult.DeserializeCollectTonesResult(property.Value);
+                    dtmfResult = DtmfResult.DeserializeDtmfResult(property.Value);
                     continue;
                 }
                 if (property.NameEquals("choiceResult"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     choiceResult = ChoiceResult.DeserializeChoiceResult(property.Value);
                     continue;
                 }
+                if (property.NameEquals("speechResult"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        continue;
+                    }
+                    speechResult = SpeechResult.DeserializeSpeechResult(property.Value);
+                    continue;
+                }
             }
-            return new RecognizeCompletedInternal(callConnectionId.Value, serverCallId.Value, correlationId.Value, operationContext.Value, resultInformation.Value, recognitionType, collectTonesResult.Value, choiceResult.Value);
+            return new RecognizeCompletedInternal(
+                callConnectionId,
+                serverCallId,
+                correlationId,
+                operationContext,
+                resultInformation,
+                recognitionType,
+                dtmfResult,
+                choiceResult,
+                speechResult);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static RecognizeCompletedInternal FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeRecognizeCompletedInternal(document.RootElement);
         }
     }
 }

@@ -57,9 +57,9 @@ namespace Azure.Containers.ContainerRegistry
             {
                 return null;
             }
-            Optional<OciDescriptor> config = default;
-            Optional<IList<OciDescriptor>> layers = default;
-            Optional<OciAnnotations> annotations = default;
+            OciDescriptor config = default;
+            IList<OciDescriptor> layers = default;
+            OciAnnotations annotations = default;
             int schemaVersion = default;
             foreach (var property in element.EnumerateObject())
             {
@@ -67,7 +67,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     config = OciDescriptor.DeserializeOciDescriptor(property.Value);
@@ -77,7 +76,6 @@ namespace Azure.Containers.ContainerRegistry
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
                     List<OciDescriptor> array = new List<OciDescriptor>();
@@ -104,7 +102,23 @@ namespace Azure.Containers.ContainerRegistry
                     continue;
                 }
             }
-            return new OciImageManifest(config.Value, Optional.ToList(layers), annotations.Value, schemaVersion);
+            return new OciImageManifest(config, layers ?? new ChangeTrackingList<OciDescriptor>(), annotations, schemaVersion);
+        }
+
+        /// <summary> Deserializes the model from a raw response. </summary>
+        /// <param name="response"> The response to deserialize the model from. </param>
+        internal static OciImageManifest FromResponse(Response response)
+        {
+            using var document = JsonDocument.Parse(response.Content);
+            return DeserializeOciImageManifest(document.RootElement);
+        }
+
+        /// <summary> Convert into a <see cref="RequestContent"/>. </summary>
+        internal virtual RequestContent ToRequestContent()
+        {
+            var content = new Utf8JsonRequestContent();
+            content.JsonWriter.WriteObjectValue(this);
+            return content;
         }
 
         internal partial class OciImageManifestConverter : JsonConverter<OciImageManifest>
@@ -113,6 +127,7 @@ namespace Azure.Containers.ContainerRegistry
             {
                 writer.WriteObjectValue(model);
             }
+
             public override OciImageManifest Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 using var document = JsonDocument.ParseValue(ref reader);

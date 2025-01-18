@@ -9,21 +9,19 @@ using System;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
-using Azure.ResourceManager.DataBox;
 using Azure.ResourceManager.DataBox.Models;
 using Azure.ResourceManager.Resources;
+using NUnit.Framework;
 
 namespace Azure.ResourceManager.DataBox.Samples
 {
     public partial class Sample_ResourceGroupResourceExtensions
     {
-        // AvailableSkusPost
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetAvailableSkus_AvailableSkusPost()
         {
-            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-02-01/examples/AvailableSkusPost.json
+            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-12-01/examples/AvailableSkusPost.json
             // this example is just showing the usage of "Service_ListAvailableSkusByResourceGroup" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -33,28 +31,27 @@ namespace Azure.ResourceManager.DataBox.Samples
 
             // this example assumes you already have this ResourceGroupResource created on azure
             // for more information of creating ResourceGroupResource, please refer to the document of ResourceGroupResource
-            string subscriptionId = "fa68082f-8ff7-4a25-95c7-ce9da541242f";
-            string resourceGroupName = "bvttoolrg6";
+            string subscriptionId = "YourSubscriptionId";
+            string resourceGroupName = "YourResourceGroupName";
             ResourceIdentifier resourceGroupResourceId = ResourceGroupResource.CreateResourceIdentifier(subscriptionId, resourceGroupName);
             ResourceGroupResource resourceGroupResource = client.GetResourceGroupResource(resourceGroupResourceId);
 
             // invoke the operation and iterate over the result
             AzureLocation location = new AzureLocation("westus");
-            AvailableSkusContent content = new AvailableSkusContent(DataBoxJobTransferType.ImportToAzure, "US", new AzureLocation("westus"));
+            AvailableSkusContent content = new AvailableSkusContent(DataBoxJobTransferType.ImportToAzure, "XX", new AzureLocation("westus"));
             await foreach (DataBoxSkuInformation item in resourceGroupResource.GetAvailableSkusAsync(location, content))
             {
                 Console.WriteLine($"Succeeded: {item}");
             }
 
-            Console.WriteLine($"Succeeded");
+            Console.WriteLine("Succeeded");
         }
 
-        // ValidateInputsByResourceGroup
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task ValidateInputs_ValidateInputsByResourceGroup()
         {
-            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-02-01/examples/ValidateInputsByResourceGroup.json
+            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-12-01/examples/ValidateInputsByResourceGroup.json
             // this example is just showing the usage of "Service_ValidateInputsByResourceGroup" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -64,8 +61,8 @@ namespace Azure.ResourceManager.DataBox.Samples
 
             // this example assumes you already have this ResourceGroupResource created on azure
             // for more information of creating ResourceGroupResource, please refer to the document of ResourceGroupResource
-            string subscriptionId = "fa68082f-8ff7-4a25-95c7-ce9da541242f";
-            string resourceGroupName = "SdkRg6861";
+            string subscriptionId = "YourSubscriptionId";
+            string resourceGroupName = "YourResourceGroupName";
             ResourceIdentifier resourceGroupResourceId = ResourceGroupResource.CreateResourceIdentifier(subscriptionId, resourceGroupName);
             ResourceGroupResource resourceGroupResource = client.GetResourceGroupResource(resourceGroupResourceId);
 
@@ -73,27 +70,29 @@ namespace Azure.ResourceManager.DataBox.Samples
             AzureLocation location = new AzureLocation("westus");
             DataBoxValidationContent content = new CreateJobValidationContent(new DataBoxValidationInputContent[]
             {
-new DataTransferDetailsValidationContent(DataBoxSkuName.DataBox,DataBoxJobTransferType.ImportToAzure)
+new DataTransferDetailsValidationContent(DataBoxSkuName.DataBox, DataBoxJobTransferType.ImportToAzure)
 {
-DataImportDetails =
-{
-new DataImportDetails(new DataBoxStorageAccountDetails(new ResourceIdentifier("/subscriptions/fa68082f-8ff7-4a25-95c7-ce9da541242f/resourcegroups/databoxbvt/providers/Microsoft.Storage/storageAccounts/databoxbvttestaccount")))
+DataImportDetails = {new DataImportDetails(new DataBoxStorageAccountDetails(new ResourceIdentifier("/subscriptions/YourSubscriptionId/resourcegroups/YourResourceGroupName/providers/Microsoft.Storage/storageAccounts/YourStorageAccountName")))},
 },
-},new DataBoxValidateAddressContent(new DataBoxShippingAddress("16 TOWNSEND ST","US","94107")
+new DataBoxValidateAddressContent(new DataBoxShippingAddress("XXXX XXXX", "XX", "00000")
 {
-StreetAddress2 = "Unit 1",
-City = "San Francisco",
-StateOrProvince = "CA",
-CompanyName = "Microsoft",
+StreetAddress2 = "XXXX XXXX",
+City = "XXXX XXXX",
+StateOrProvince = "XX",
+CompanyName = "XXXX XXXX",
 AddressType = DataBoxShippingAddressType.Commercial,
-},DataBoxSkuName.DataBox)
+}, DataBoxSkuName.DataBox)
 {
-TransportPreferencesPreferredShipmentType = TransportShipmentType.MicrosoftManaged,
-},new SubscriptionIsAllowedToCreateJobValidationContent(),new SkuAvailabilityValidationContent(DataBoxSkuName.DataBox,DataBoxJobTransferType.ImportToAzure,"US",new AzureLocation("westus")),new CreateOrderLimitForSubscriptionValidationContent(DataBoxSkuName.DataBox),new PreferencesValidationContent(DataBoxSkuName.DataBox)
+TransportPreferences = new TransportPreferences(TransportShipmentType.MicrosoftManaged),
+},
+new SubscriptionIsAllowedToCreateJobValidationContent(),
+new SkuAvailabilityValidationContent(DataBoxSkuName.DataBox, DataBoxJobTransferType.ImportToAzure, "XX", new AzureLocation("westus")),
+new CreateOrderLimitForSubscriptionValidationContent(DataBoxSkuName.DataBox),
+new PreferencesValidationContent(DataBoxSkuName.DataBox)
 {
-Preference = new DataBoxOrderPreferences()
+Preference = new DataBoxOrderPreferences
 {
-TransportPreferencesPreferredShipmentType = TransportShipmentType.MicrosoftManaged,
+TransportPreferences = new TransportPreferences(TransportShipmentType.MicrosoftManaged),
 },
 }
             });
@@ -102,12 +101,11 @@ TransportPreferencesPreferredShipmentType = TransportShipmentType.MicrosoftManag
             Console.WriteLine($"Succeeded: {result}");
         }
 
-        // RegionConfigurationByResourceGroup
-        [NUnit.Framework.Test]
-        [NUnit.Framework.Ignore("Only verifying that the sample builds")]
+        [Test]
+        [Ignore("Only validating compilation of examples")]
         public async Task GetRegionConfiguration_RegionConfigurationByResourceGroup()
         {
-            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-02-01/examples/RegionConfigurationByResourceGroup.json
+            // Generated from example definition: specification/databox/resource-manager/Microsoft.DataBox/stable/2022-12-01/examples/RegionConfigurationByResourceGroup.json
             // this example is just showing the usage of "Service_RegionConfigurationByResourceGroup" operation, for the dependent resources, they will have to be created separately.
 
             // get your azure access token, for more details of how Azure SDK get your access token, please refer to https://learn.microsoft.com/en-us/dotnet/azure/sdk/authentication?tabs=command-line
@@ -117,14 +115,14 @@ TransportPreferencesPreferredShipmentType = TransportShipmentType.MicrosoftManag
 
             // this example assumes you already have this ResourceGroupResource created on azure
             // for more information of creating ResourceGroupResource, please refer to the document of ResourceGroupResource
-            string subscriptionId = "fa68082f-8ff7-4a25-95c7-ce9da541242f";
-            string resourceGroupName = "SdkRg4981";
+            string subscriptionId = "YourSubscriptionId";
+            string resourceGroupName = "YourResourceGroupName";
             ResourceIdentifier resourceGroupResourceId = ResourceGroupResource.CreateResourceIdentifier(subscriptionId, resourceGroupName);
             ResourceGroupResource resourceGroupResource = client.GetResourceGroupResource(resourceGroupResourceId);
 
             // invoke the operation
             AzureLocation location = new AzureLocation("westus");
-            RegionConfigurationContent content = new RegionConfigurationContent()
+            RegionConfigurationContent content = new RegionConfigurationContent
             {
                 ScheduleAvailabilityRequest = new DataBoxScheduleAvailabilityContent(new AzureLocation("westus")),
             };

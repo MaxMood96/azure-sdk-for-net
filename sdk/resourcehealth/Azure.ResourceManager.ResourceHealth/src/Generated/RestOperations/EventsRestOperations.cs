@@ -9,7 +9,6 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.ResourceManager.ResourceHealth.Models;
@@ -33,8 +32,27 @@ namespace Azure.ResourceManager.ResourceHealth
         {
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
             _endpoint = endpoint ?? new Uri("https://management.azure.com");
-            _apiVersion = apiVersion ?? "2022-10-01-preview";
+            _apiVersion = apiVersion ?? "2023-10-01-preview";
             _userAgent = new TelemetryDetails(GetType().Assembly, applicationId);
+        }
+
+        internal RequestUriBuilder CreateListBySubscriptionIdRequestUri(string subscriptionId, string filter, string queryStartTime)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/subscriptions/", false);
+            uri.AppendPath(subscriptionId, true);
+            uri.AppendPath("/providers/Microsoft.ResourceHealth/events", false);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            if (filter != null)
+            {
+                uri.AppendQuery("$filter", filter, true);
+            }
+            if (queryStartTime != null)
+            {
+                uri.AppendQuery("queryStartTime", queryStartTime, true);
+            }
+            return uri;
         }
 
         internal HttpMessage CreateListBySubscriptionIdRequest(string subscriptionId, string filter, string queryStartTime)
@@ -69,7 +87,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="subscriptionId"/> is null. </exception>
         /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
-        public async Task<Response<Events>> ListBySubscriptionIdAsync(string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListBySubscriptionIdAsync(string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
 
@@ -79,9 +97,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -96,7 +114,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="subscriptionId"/> is null. </exception>
         /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
-        public Response<Events> ListBySubscriptionId(string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListBySubscriptionId(string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
 
@@ -106,14 +124,31 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListByTenantIdRequestUri(string filter, string queryStartTime)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/providers/Microsoft.ResourceHealth/events", false);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            if (filter != null)
+            {
+                uri.AppendQuery("$filter", filter, true);
+            }
+            if (queryStartTime != null)
+            {
+                uri.AppendQuery("queryStartTime", queryStartTime, true);
+            }
+            return uri;
         }
 
         internal HttpMessage CreateListByTenantIdRequest(string filter, string queryStartTime)
@@ -143,7 +178,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="queryStartTime"> Specifies from when to return events, based on the lastUpdateTime property. For example, queryStartTime = 7/24/2020 OR queryStartTime=7%2F24%2F2020. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        public async Task<Response<Events>> ListByTenantIdAsync(string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListByTenantIdAsync(string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             using var message = CreateListByTenantIdRequest(filter, queryStartTime);
             await _pipeline.SendAsync(message, cancellationToken).ConfigureAwait(false);
@@ -151,9 +186,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -165,7 +200,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="queryStartTime"> Specifies from when to return events, based on the lastUpdateTime property. For example, queryStartTime = 7/24/2020 OR queryStartTime=7%2F24%2F2020. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
-        public Response<Events> ListByTenantId(string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListByTenantId(string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             using var message = CreateListByTenantIdRequest(filter, queryStartTime);
             _pipeline.Send(message, cancellationToken);
@@ -173,14 +208,29 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListBySingleResourceRequestUri(string resourceUri, string filter)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendPath("/", false);
+            uri.AppendPath(resourceUri, false);
+            uri.AppendPath("/providers/Microsoft.ResourceHealth/events", false);
+            uri.AppendQuery("api-version", _apiVersion, true);
+            if (filter != null)
+            {
+                uri.AppendQuery("$filter", filter, true);
+            }
+            return uri;
         }
 
         internal HttpMessage CreateListBySingleResourceRequest(string resourceUri, string filter)
@@ -209,7 +259,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="resourceUri"/> is null. </exception>
-        public async Task<Response<Events>> ListBySingleResourceAsync(string resourceUri, string filter = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListBySingleResourceAsync(string resourceUri, string filter = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(resourceUri, nameof(resourceUri));
 
@@ -219,9 +269,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -234,7 +284,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="resourceUri"/> is null. </exception>
-        public Response<Events> ListBySingleResource(string resourceUri, string filter = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListBySingleResource(string resourceUri, string filter = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(resourceUri, nameof(resourceUri));
 
@@ -244,14 +294,22 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListBySubscriptionIdNextPageRequestUri(string nextLink, string subscriptionId, string filter, string queryStartTime)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendRawNextLink(nextLink, false);
+            return uri;
         }
 
         internal HttpMessage CreateListBySubscriptionIdNextPageRequest(string nextLink, string subscriptionId, string filter, string queryStartTime)
@@ -276,7 +334,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="subscriptionId"/> is null. </exception>
         /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
-        public async Task<Response<Events>> ListBySubscriptionIdNextPageAsync(string nextLink, string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListBySubscriptionIdNextPageAsync(string nextLink, string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
             Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
@@ -287,9 +345,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -305,7 +363,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="subscriptionId"/> is null. </exception>
         /// <exception cref="ArgumentException"> <paramref name="subscriptionId"/> is an empty string, and was expected to be non-empty. </exception>
-        public Response<Events> ListBySubscriptionIdNextPage(string nextLink, string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListBySubscriptionIdNextPage(string nextLink, string subscriptionId, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
             Argument.AssertNotNullOrEmpty(subscriptionId, nameof(subscriptionId));
@@ -316,14 +374,22 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListByTenantIdNextPageRequestUri(string nextLink, string filter, string queryStartTime)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendRawNextLink(nextLink, false);
+            return uri;
         }
 
         internal HttpMessage CreateListByTenantIdNextPageRequest(string nextLink, string filter, string queryStartTime)
@@ -346,7 +412,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="queryStartTime"> Specifies from when to return events, based on the lastUpdateTime property. For example, queryStartTime = 7/24/2020 OR queryStartTime=7%2F24%2F2020. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> is null. </exception>
-        public async Task<Response<Events>> ListByTenantIdNextPageAsync(string nextLink, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListByTenantIdNextPageAsync(string nextLink, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
 
@@ -356,9 +422,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -372,7 +438,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="queryStartTime"> Specifies from when to return events, based on the lastUpdateTime property. For example, queryStartTime = 7/24/2020 OR queryStartTime=7%2F24%2F2020. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> is null. </exception>
-        public Response<Events> ListByTenantIdNextPage(string nextLink, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListByTenantIdNextPage(string nextLink, string filter = null, string queryStartTime = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
 
@@ -382,14 +448,22 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
                     throw new RequestFailedException(message.Response);
             }
+        }
+
+        internal RequestUriBuilder CreateListBySingleResourceNextPageRequestUri(string nextLink, string resourceUri, string filter)
+        {
+            var uri = new RawRequestUriBuilder();
+            uri.Reset(_endpoint);
+            uri.AppendRawNextLink(nextLink, false);
+            return uri;
         }
 
         internal HttpMessage CreateListBySingleResourceNextPageRequest(string nextLink, string resourceUri, string filter)
@@ -412,7 +486,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="resourceUri"/> is null. </exception>
-        public async Task<Response<Events>> ListBySingleResourceNextPageAsync(string nextLink, string resourceUri, string filter = null, CancellationToken cancellationToken = default)
+        public async Task<Response<ResourceHealthEventListResult>> ListBySingleResourceNextPageAsync(string nextLink, string resourceUri, string filter = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
             Argument.AssertNotNull(resourceUri, nameof(resourceUri));
@@ -423,9 +497,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = await JsonDocument.ParseAsync(message.Response.ContentStream, default, cancellationToken).ConfigureAwait(false);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:
@@ -439,7 +513,7 @@ namespace Azure.ResourceManager.ResourceHealth
         /// <param name="filter"> The filter to apply on the operation. For more information please see https://docs.microsoft.com/en-us/rest/api/apimanagement/apis?redirectedfrom=MSDN. </param>
         /// <param name="cancellationToken"> The cancellation token to use. </param>
         /// <exception cref="ArgumentNullException"> <paramref name="nextLink"/> or <paramref name="resourceUri"/> is null. </exception>
-        public Response<Events> ListBySingleResourceNextPage(string nextLink, string resourceUri, string filter = null, CancellationToken cancellationToken = default)
+        public Response<ResourceHealthEventListResult> ListBySingleResourceNextPage(string nextLink, string resourceUri, string filter = null, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(nextLink, nameof(nextLink));
             Argument.AssertNotNull(resourceUri, nameof(resourceUri));
@@ -450,9 +524,9 @@ namespace Azure.ResourceManager.ResourceHealth
             {
                 case 200:
                     {
-                        Events value = default;
+                        ResourceHealthEventListResult value = default;
                         using var document = JsonDocument.Parse(message.Response.ContentStream);
-                        value = Events.DeserializeEvents(document.RootElement);
+                        value = ResourceHealthEventListResult.DeserializeResourceHealthEventListResult(document.RootElement);
                         return Response.FromValue(value, message.Response);
                     }
                 default:

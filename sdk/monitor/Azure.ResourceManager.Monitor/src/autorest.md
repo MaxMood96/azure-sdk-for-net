@@ -5,16 +5,25 @@ Run `dotnet build /t:GenerateCode` to generate code.
 ``` yaml
 
 azure-arm: true
-generate-model-factory: false
 library-name: Monitor
 namespace: Azure.ResourceManager.Monitor
-require: https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/readme.md
+require: https://github.com/Azure/azure-rest-api-specs/blob/cf406046c304ec528a84ae1a151f3d1a647058a2/specification/monitor/resource-manager/readme.md
 tag: package-track2-stable
 output-folder: $(this-folder)/Generated
 clear-output-folder: true
+sample-gen:
+  output-folder: $(this-folder)/../samples/Generated
+  clear-output-folder: true
+  skipped-operations:
+  - MetricDefinitions_List
+  - Metrics_List
+  - Baselines_List
+  - MetricNamespaces_List
 skip-csproj: true
 modelerfour:
   flatten-payloads: false
+deserialize-null-collection-as-null-value: true
+use-model-reader-writer: true
 
 format-by-name-rules:
   "tenantId": "uuid"
@@ -24,7 +33,7 @@ format-by-name-rules:
   "*Uri": "Uri"
   "*Uris": "Uri"
 
-rename-rules:
+acronym-mapping:
   CPU: Cpu
   CPUs: Cpus
   Os: OS
@@ -53,6 +62,7 @@ rename-rules:
   HH: Hh
   DD: Dd
   SS: Ss
+  UDP: Udp
 
 irregular-plural-words:
   status: status
@@ -61,7 +71,7 @@ prepend-rp-prefix:
 - Action
 - Recurrence
 - Response
-- OdataType
+- Odatatype
 - Metric
 - Incident
 - Enabled
@@ -78,8 +88,12 @@ override-operation-name:
   ActionGroups_PostTestNotifications: CreateNotifications
   ActionGroups_CreateNotificationsAtResourceGroupLevel: CreateNotifications
   ActionGroups_CreateNotificationsAtActionGroupResourceLevel: CreateNotifications
+  Baselines_List: GetMonitorMetricBaselines
+  Metrics_List: GetMonitorMetrics
   Metrics_ListAtSubscriptionScope: GetMonitorMetrics
   Metrics_ListAtSubscriptionScopePost: GetMonitorMetricsWithPost
+  MetricDefinitions_List: GetMonitorMetricDefinitions
+  MetricNamespaces_List: GetMonitorMetricNamespaces
 
 rename-mapping:
   AutoscaleSetting: AutoscaleSettingProperties
@@ -248,7 +262,7 @@ rename-mapping:
   ConditionOperator: MonitorConditionOperator
   RuleResolveConfiguration: ScheduledQueryRuleResolveConfiguration
   RuleResolveConfiguration.autoResolved: IsAutoResolved
-  PublicNetworkAccess: ScheduledQueryRulePublicNetworkAccess
+  PublicNetworkAccess: MonitorWorkspacePublicNetworkAccess
   MetadataValue: MonitorMetadataValue
   MetricValue: MonitorMetricValue
   MetricResultType: MonitorMetricResultType
@@ -256,6 +270,77 @@ rename-mapping:
   SubscriptionScopeMetricsRequestBodyParameters: SubscriptionResourceGetMonitorMetricsWithPostContent
   SubscriptionScopeMetric: SubscriptionMonitorMetric
   TimeSeriesElement: MonitorTimeSeriesElement
+  StorageBlobDestination.storageAccountResourceId: -|arm-id
+  StorageTableDestination.storageAccountResourceId: -|arm-id
+  PrivateLinkScopedResource.resourceId: -|arm-id
+  PrivateLinkScopedResource: DataCollectionRulePrivateLinkScopedResourceInfo
+  EventHubDataSource: DataCollectionRuleEventHubDataSource
+  EventHubDestination: DataCollectionRuleEventHubDestination
+  EventHubDestination.eventHubResourceId: -|arm-id
+  EventHubDirectDestination: DataCollectionRuleEventHubDirectDestination
+  EventHubDirectDestination.eventHubResourceId: -|arm-id
+  FailoverConfigurationSpec: DataCollectionRuleBcdrFailoverConfigurationSpec
+  FailoverConfigurationSpec.ActiveLocation: -|azure-location
+  KnownLocationSpecProvisioningStatus: DataCollectionRuleBcdrLocationSpecProvisioningStatus
+  KnownPrometheusForwarderDataSourceStreams: DataCollectionRuleKnownPrometheusForwarderDataSourceStream
+  LocationSpec: DataCollectionRuleBcdrLocationSpec
+  Metadata: DataCollectionRuleRelatedResourceMetadata
+  Metadata.ProvisionedByResourceId: -|arm-id
+  MonitoringAccountDestination.accountResourceId: -|arm-id
+  StorageBlobDestination: DataCollectionRuleStorageBlobDestination
+  StorageTableDestination: DataCollectionRuleStorageTableDestination
+  ActionType: MonitorWorkspaceActionType
+  Metrics: MonitorWorkspaceMetricProperties
+  AzureMonitorWorkspace: MonitorWorkspaceResource
+  AzureMonitorWorkspaceCollection: MonitorWorkspaceResourceCollection
+  AzureMonitorWorkspaceData: MonitorWorkspaceResourceData
+  IngestionSettings: MonitorWorkspaceIngestionSettings
+  IngestionSettings.dataCollectionEndpointResourceId: -|arm-id
+  IngestionSettings.dataCollectionRuleResourceId: -|arm-id
+  AzureMonitorWorkspaceDefaultIngestionSettings: MonitorWorkspaceDefaultIngestionSettings
+  AzureMonitorWorkspaceMetrics: MonitorWorkspaceMetrics
+  AzureMonitorWorkspacePatch: MonitorWorkspaceResourcePatch
+  AzureMonitorWorkspaceListResult: MonitorWorkspaceResourceListResult
+  MetricDefinition: MonitorMetricDefinition
+  AggregationType: MonitorAggregationType
+  BaselineMetadata: MonitorBaselineMetadata
+  BaselineSensitivity: MonitorBaselineSensitivity
+  MetricAvailability: MonitorMetricAvailability
+  MetricClass: MonitorMetricClass
+  MetricNamespace: MonitorMetricNamespace
+  MetricSingleDimension: MonitorMetricSingleDimension
+  NamespaceClassification: MonitorNamespaceClassification
+  ResultType: MonitorResultType
+  SingleBaseline: MonitorSingleBaseline
+  SingleMetricBaseline: MonitorSingleMetricBaseline
+  TimeSeriesBaseline: MonitorTimeSeriesBaseline
+  Unit: MonitorMetricUnit
+  CacheConfiguration: MonitorWorkspaceLogsExporterCacheConfiguration
+  ConcurrencyConfiguration: MonitorWorkspaceLogsExporterConcurrencyConfiguration
+  SchemaMap: MonitorWorkspaceLogsSchemaMap
+  RecordMap: MonitorWorkspaceLogsRecordMap
+  ResourceMap: MonitorWorkspaceLogsResourceMap
+  ScopeMap: MonitorWorkspaceLogsScopeMap
+  Receiver: PipelineGroupReceiver
+  ReceiverType: PipelineGroupReceiverType
+  Processor: PipelineGroupProcessor
+  ProcessorType: PipelineGroupProcessorType
+  Exporter: PipelineGroupExporter
+  ExporterType: PipelineGroupExporterType
+  Service: PipelineGroupService
+  Pipeline: PipelineGroupServicePipeline
+  PipelineType: PipelineGroupServicePipelineType
+  PersistenceConfigurations: PipelineGroupServicePersistenceConfigurations
+  NetworkingConfiguration: PipelineGroupNetworkingConfiguration
+  NetworkingRoute: PipelineGroupNetworkingRoute
+  ExternalNetworkingMode: PipelineGroupExternalNetworkingMode
+  AzureResourceManagerCommonTypesExtendedLocation: Azure.ResourceManager.CommonTypes.ExtendedLocation
+  AzureMonitorWorkspaceLogsApiConfig: MonitorWorkspaceLogsApiConfig
+  AzureMonitorWorkspaceLogsExporter: MonitorWorkspaceLogsExporter
+
+suppress-abstract-base-class:
+- MetricAlertCriteria
+- MultiMetricCriteria
 
 directive:
   # remove operations because they are covered in resourcemanager we no longer need to generate them here, and they are causing duplicate schemas
@@ -321,6 +406,9 @@ directive:
   - from: v3/types.json
     where: $.definitions.ErrorResponse
     transform: $["x-ms-client-name"] = "CommonErrorResponseV3"
+  - from: v4/types.json
+    where: $.definitions.ErrorResponse
+    transform: $["x-ms-client-name"] = "CommonErrorResponseV4"
   - from: v2/types.json
     where: $.definitions.ErrorDetail
     transform: $["x-ms-client-name"] = "CommonErrorDetail"
@@ -333,6 +421,22 @@ directive:
   - from: v3/types.json
     where: $.definitions.TrackedResource
     transform: $["x-ms-client-name"] = "CommonTrackedResourceV3"
+  - from: v4/privatelinks.json
+    where: $.definitions.PrivateEndpoint
+    transform: $["x-ms-client-name"] = "MonitorWorkspacePrivateEndpoint"
+  - from: v4/privatelinks.json
+    where: $.definitions.PrivateEndpointConnection
+    transform: $["x-ms-client-name"] = "MonitorWorkspacePrivateEndpointConnection"
+  - from: v4/privatelinks.json
+    where: $.definitions.PrivateEndpointConnectionProperties
+    transform: $["x-ms-client-name"] = "MonitorWorkspacePrivateEndpointConnectionProperties"
+  - from: v4/types.json
+    where: $.definitions.Resource
+    transform: $["x-ms-client-name"] = "CommonResourceV4"
+  # reinforce ProvisioningState's readonly status
+  - from: swagger-document
+    where: $.definitions.PrivateEndpointConnectionProperties.properties.provisioningState
+    transform: $["readOnly"] = true
   # in order to let the ResponseError replace the ErrorResponseCommon in monitor, we need to add a target property to it
   - from: swagger-document
     where: $.definitions.ErrorResponseCommon.properties
@@ -366,6 +470,33 @@ directive:
                   "modelAsString": true
                 }
             };
+  - from: azuremonitor.json
+    where: $.definitions.AzureMonitorWorkspace.properties
+    transform: >
+      $.defaultIngestionSettings = {
+          "description": "The Data Collection Rule and Endpoint used for ingestion by default.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/IngestionSettings"
+            }
+          ],
+          "readOnly": true,
+          "x-ms-mutability": [
+            "read"
+          ]
+        };
+      $.metrics = {
+          "description": "Properties related to the metrics container in the Azure Monitor Workspace",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Metrics"
+            }
+          ],
+          "readOnly": true,
+          "x-ms-mutability": [
+            "read"
+          ]
+        };
 ```
 
 ## Tag: package-track2-stable
@@ -376,30 +507,29 @@ These settings apply only when `--tag=package-track2-stable` is specified on the
 
 ```yaml $(tag) == 'package-track2-stable'
 input-file:
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-10-01/autoscale_API.json
-# - https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/operations_API.json # we do not need to support this
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/alertRulesIncidents_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/alertRules_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/logProfiles_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-05-01-preview/diagnosticsSettings_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-05-01-preview/diagnosticsSettingsCategories_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2023-01-01/actionGroups_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/activityLogs_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/eventCategories_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/tenantActivityLogs_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2018-01-01/metricDefinitions_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2021-05-01/metrics_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2019-03-01/metricBaselines_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2018-03-01/metricAlert_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-06-15/scheduledQueryRule_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2017-12-01-preview/metricNamespaces_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2018-11-27-preview/vmInsightsOnboarding_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-07-01-preview/privateLinkScopes_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/stable/2020-10-01/activityLogAlerts_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-09-01-preview/dataCollectionEndpoints_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-09-01-preview/dataCollectionRuleAssociations_API.json
-- https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-09-01-preview/dataCollectionRules_API.json
-# exclude these two files because they do not exist in previous stable version of the SDK
-# - https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Monitor/preview/2021-06-03-preview/monitoringAccounts_API.json
-# - https://github.com/Azure/azure-rest-api-specs/blob/a61e5f218a0163431057ed9555eb60c58311792b/specification/monitor/resource-manager/Microsoft.Monitor/preview/2021-06-03-preview/operations_API.json # we do not need to support this
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-10-01/autoscale_API.json
+# - https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/operations_API.json # we do not need to support this
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/alertRulesIncidents_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/alertRules_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2016-03-01/logProfiles_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-05-01-preview/diagnosticsSettings_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-05-01-preview/diagnosticsSettingsCategories_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2023-01-01/actionGroups_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/activityLogs_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/eventCategories_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/tenantActivityLogs_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2018-01-01/metricDefinitions_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2021-05-01/metrics_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2019-03-01/metricBaselines_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2018-03-01/metricAlert_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-06-15/scheduledQueryRule_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/preview/2017-12-01-preview/metricNamespaces_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/preview/2018-11-27-preview/vmInsightsOnboarding_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/preview/2021-07-01-preview/privateLinkScopes_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2020-10-01/activityLogAlerts_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-06-01/dataCollectionEndpoints_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-06-01/dataCollectionRuleAssociations_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Insights/stable/2022-06-01/dataCollectionRules_API.json
+- https://github.com/Azure/azure-rest-api-specs/blob/cf406046c304ec528a84ae1a151f3d1a647058a2/specification/monitor/resource-manager/Microsoft.Monitor/preview/2023-10-01-preview/azuremonitor.json
+# - https://github.com/Azure/azure-rest-api-specs/blob/2491b616cde43277fae339604f03f59412e016aa/specification/monitor/resource-manager/Microsoft.Monitor/stable/2023-04-03/operations_API.json # we do not need to support this
 ```
